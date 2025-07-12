@@ -20,3 +20,18 @@ it('escapes special characters in literal', function () {
 it('throws exception for empty literal', function () {
     Regine::make()->literal('');
 })->throws(InvalidArgumentException::class, 'Literal text cannot be empty.');
+
+it('adds anyChar correctly', function () {
+    $regex = Regine::make()->anyChar()->compile();
+    expect($regex)->toBe('/./');
+});
+
+it('chains basic matchers', function () {
+    $regex = Regine::make()->digit()->whitespace()->wordChar()->compile();
+    expect($regex)->toBe('/\d\s\w/');
+});
+
+it('combines with literal', function () {
+    $regex = Regine::make()->literal('test')->nonDigit()->compile();
+    expect($regex)->toBe('/test\D/');
+});
