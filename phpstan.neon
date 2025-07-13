@@ -1,0 +1,36 @@
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+parameters:
+    level: 10
+    paths:
+        - src
+        - tests
+    
+    # Ignore common test patterns that are acceptable
+    ignoreErrors:
+    
+    # Additional rules for stricter analysis
+    checkMissingCallableSignature: true
+    checkArgumentsPassedByReference: true
+    checkMaybeUndefinedVariables: true
+    checkNullables: true
+    checkThisOnly: false
+    checkUnionTypes: true
+    checkExplicitMixedMissingReturn: true
+    checkPhpDocMissingReturn: true
+    checkPhpDocMethodSignatures: true
+    checkExtraArguments: true
+    reportUnmatchedIgnoredErrors: true
+    
+    # PHP version (adjust if needed)
+    phpVersion: 80300
+    
+    # Exclude vendor directory
+    excludePaths:
+        - vendor
+        - tests
+        - node_modules (?)
+        
+    # Treat PHP errors as exceptions
+    treatPhpDocTypesAsCertain: false 
