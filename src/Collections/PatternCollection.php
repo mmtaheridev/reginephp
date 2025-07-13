@@ -33,7 +33,7 @@ class PatternCollection
      */
     public function getLastComponent(): ?RegexComponent
     {
-        if (empty($this->components)) {
+        if ($this->components === []) {
             return null;
         }
 
@@ -63,7 +63,7 @@ class PatternCollection
      */
     public function isEmpty(): bool
     {
-        return empty($this->components);
+        return $this->components === [];
     }
 
     /**
