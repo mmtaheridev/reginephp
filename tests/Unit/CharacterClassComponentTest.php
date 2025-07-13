@@ -56,15 +56,15 @@ describe('Basic Character Classes', function () {
 describe('Character Class Error Handling', function () {
     it('throws for empty anyOf', function () {
         Regine::make()->anyOf('');
-    })->throws(InvalidArgumentException::class, 'Characters cannot be empty.');
+    })->throws(InvalidArgumentException::class, 'Character class cannot be empty.');
 
     it('throws for empty noneOf', function () {
         Regine::make()->noneOf('');
-    })->throws(InvalidArgumentException::class, 'Characters cannot be empty.');
+    })->throws(InvalidArgumentException::class, 'Character class cannot be empty.');
 
     it('throws for invalid range characters', function () {
         Regine::make()->range('ab', 'z');
-    })->throws(InvalidArgumentException::class, 'Range must be single characters.');
+    })->throws(InvalidArgumentException::class, 'Range boundaries must be single characters.');
 
     it('throws for invalid range order', function () {
         Regine::make()->range('z', 'a');

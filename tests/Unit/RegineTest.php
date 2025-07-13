@@ -128,7 +128,7 @@ describe('Complex Pattern Integration', function () {
             ->anyChar()->oneOrMore()
             ->compile();
 
-        expect($regex)->toBe('/^\# .+/');
+        expect($regex)->toBe('/^# .+/');
     });
 
     it('creates file extension pattern', function () {
@@ -291,7 +291,7 @@ describe('Groups', function () {
         $username = Regine::make()->wordChar()->oneOrMore();
         $domain = Regine::make()->wordChar()->oneOrMore();
         $tld = Regine::make()->wordChar()->between(2, 4);
-        
+
         $regex = Regine::make()
             ->startOfString()
             ->namedGroup('username', $username)
@@ -301,7 +301,7 @@ describe('Groups', function () {
             ->namedGroup('tld', $tld)
             ->endOfString()
             ->compile();
-        
+
         expect($regex)->toBe('/^(?<username>\w+)@(?<domain>\w+)\.(?<tld>\w{2,4})$/');
     });
 
@@ -328,9 +328,9 @@ describe('Groups', function () {
         $regine = Regine::make()
             ->group('abc')
             ->namedGroup('test', 'def');
-        
+
         expect($regine->getComponentCount())->toBe(2);
-        
+
         $metadata = $regine->getMetadata();
         expect($metadata[0]['type'])->toBe('group');
         expect($metadata[0]['group_type'])->toBe('CAPTURING');
@@ -343,7 +343,7 @@ describe('Groups', function () {
         $regine = Regine::make()
             ->group('abc')
             ->namedGroup('test', 'def');
-        
+
         expect($regine->describe())->toContain("capturing group containing 'abc'");
         expect($regine->describe())->toContain("named group named 'test' containing 'def'");
     });
@@ -355,10 +355,10 @@ describe('Groups', function () {
             ->literal(' ')
             ->namedGroup('number', '\d+')
             ->endOfString();
-        
+
         expect($regine->test('hello 123'))->toBe(true);
         expect($regine->test('hello abc'))->toBe(false);
-        
+
         $matches = $regine->matches('hello 123');
         expect($matches)->toHaveCount(5); // Full match + 2 named groups + 2 numeric groups
         expect($matches[0])->toBe('hello 123'); // Full match
