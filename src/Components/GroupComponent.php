@@ -85,10 +85,8 @@ class GroupComponent implements RegexComponent
     private function compilePattern(Regine|string $pattern): string
     {
         if ($pattern instanceof Regine) {
-            // Auto-compile Regine objects by extracting the pattern without delimiters
-            $compiled = $pattern->compile();
-
-            return trim($compiled, '/');
+            // Use the raw compilation method for nesting patterns
+            return $pattern->compileRaw();
         }
 
         return $pattern;
@@ -131,7 +129,7 @@ class GroupComponent implements RegexComponent
             throw new InvalidArgumentException('Only conditional groups can have conditions or else patterns.');
         }
 
-        if (empty($this->pattern)) {
+        if ($this->pattern === '') {
             throw new InvalidArgumentException('Group pattern cannot be empty.');
         }
     }

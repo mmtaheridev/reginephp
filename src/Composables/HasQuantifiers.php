@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Regine\Composables;
 
 use InvalidArgumentException;
+use Regine\Collections\PatternCollection;
+use Regine\Components\GroupComponent;
 use Regine\Components\QuantifierComponent;
+use Regine\Enums\GroupTypesEnum;
+use RuntimeException;
 
 trait HasQuantifiers
 {
@@ -82,6 +86,34 @@ trait HasQuantifiers
 
         if (! $lastComponent->canBeQuantified()) {
             throw new InvalidArgumentException('Cannot quantify the preceding element.');
+        }
+
+        // If the last component is an alternation, wrap it in a non-capturing group
+        if ($lastComponent->getType() === 'alternation') {
+            // Remove the alternation component and wrap it in a group
+            $components = $this->components->getComponents();
+            $alternationComponent = array_pop($components);
+
+            if ($alternationComponent === null) {
+                throw new RuntimeException('Expected alternation component but found null');
+            }
+
+            // Create a new pattern collection without the alternation
+            $this->components = new PatternCollection;
+            foreach ($components as $component) {
+                $this->components->add($component);
+            }
+
+            // Wrap the alternation in a non-capturing group
+            $groupComponent = new GroupComponent(
+                GroupTypesEnum::NON_CAPTURING,
+                $alternationComponent->compile()
+            );
+
+            $this->components->add($groupComponent);
+
+            // Update the last component reference
+            $lastComponent = $groupComponent;
         }
 
         $this->components->add($quantifier);

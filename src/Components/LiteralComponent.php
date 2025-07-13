@@ -6,38 +6,43 @@ namespace Regine\Components;
 
 use InvalidArgumentException;
 use Regine\Contracts\RegexComponent;
+use Regine\ValueObjects\SafeCharacter;
+use Regine\ValueObjects\SafeString;
 
 class LiteralComponent implements RegexComponent
 {
     private static string $type = 'LITERAL';
 
-    private string $text;
+    private SafeString $text;
 
     public function __construct(string $text)
     {
-        if (empty($text)) {
+        if ($text === '') {
             throw new InvalidArgumentException('Literal text cannot be empty.');
         }
-        $this->text = $text;
+        $this->text = SafeString::from($text);
     }
 
     public function compile(): string
     {
-        return preg_quote($this->text, '/');
+        return $this->text->escaped();
     }
 
     public function getType(): string
     {
-        return 'literal';
+        return self::$type;
     }
 
     public function getMetadata(): array
     {
         return [
-            'type' => $this->getType(),
-            'text' => $this->text,
-            'length' => strlen($this->text),
-            'enum' => self::$type, // LiteralComponent doesn't use enums, but adding for consistency
+            'type' => self::$type,
+            'text' => $this->text->getRaw(),
+            'hasSpecialCharacters' => $this->text->hasSpecialCharacters(),
+            'specialCharacters' => array_map(
+                fn (SafeCharacter $char): string => $char->getRaw(),
+                $this->text->getSpecialCharacters()
+            ),
         ];
     }
 
@@ -48,6 +53,6 @@ class LiteralComponent implements RegexComponent
 
     public function getDescription(): string
     {
-        return "match literally '{$this->text}'";
+        return "Literal text: '{$this->text->getRaw()}'";
     }
 }

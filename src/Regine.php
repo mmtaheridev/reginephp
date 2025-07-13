@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Regine;
 
 use Regine\Collections\PatternCollection;
+use Regine\Composables\HasAlternation;
 use Regine\Composables\HasAnchors;
 use Regine\Composables\HasCharacterClasses;
 use Regine\Composables\HasGroups;
@@ -14,7 +15,8 @@ use Regine\Composables\HasShorthands;
 
 class Regine
 {
-    use HasAnchors,
+    use HasAlternation,
+        HasAnchors,
         HasCharacterClasses,
         HasGroups,
         HasLiterals,
@@ -36,6 +38,22 @@ class Regine
     public function compile(string $delimiter = '/'): string
     {
         return $delimiter . $this->components->compile() . $delimiter;
+    }
+
+    /**
+     * Compile the pattern without delimiters (raw pattern)
+     *
+     * This is useful for nesting patterns, Laravel routes, or other contexts
+     * where regex delimiters are not needed.
+     *
+     * <code>
+     *      $pattern = Regine::make()->literal('test')->digit()->oneOrMore()->compileRaw(); // test\d+
+     *      Route::get("/{$pattern}", function() { ... }); // Laravel route usage
+     * </code>
+     */
+    public function compileRaw(): string
+    {
+        return $this->components->compile();
     }
 
     /**

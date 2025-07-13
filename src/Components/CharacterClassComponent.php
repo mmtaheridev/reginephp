@@ -7,21 +7,25 @@ namespace Regine\Components;
 use InvalidArgumentException;
 use Regine\Contracts\RegexComponent;
 use Regine\Enums\CharacterClassTypesEnum;
+use Regine\ValueObjects\SafeCharacter;
+use Regine\ValueObjects\SafeString;
 
 class CharacterClassComponent implements RegexComponent
 {
-    private string $chars;
+    private static string $type = 'CHARACTER_CLASS';
+
+    private SafeString $chars;
     private bool $negated;
-    private CharacterClassTypesEnum $type;
+    private CharacterClassTypesEnum $classType;
 
     public function __construct(string $chars, bool $negated, CharacterClassTypesEnum $type)
     {
-        if (empty($chars)) {
-            throw new InvalidArgumentException('Characters cannot be empty.');
+        if ($chars === '') {
+            throw new InvalidArgumentException('Character class cannot be empty.');
         }
-        $this->chars = $chars;
+        $this->chars = SafeString::from($chars);
         $this->negated = $negated;
-        $this->type = $type;
+        $this->classType = $type;
     }
 
     public static function anyOf(string $chars): self
@@ -37,10 +41,9 @@ class CharacterClassComponent implements RegexComponent
     public static function range(string $from, string $to): self
     {
         if (strlen($from) !== 1 || strlen($to) !== 1) {
-            throw new InvalidArgumentException('Range must be single characters.');
+            throw new InvalidArgumentException('Range boundaries must be single characters.');
         }
-
-        if (ord($from) > ord($to)) {
+        if ($from > $to) {
             throw new InvalidArgumentException('Range start must be less than or equal to range end.');
         }
 
@@ -49,34 +52,52 @@ class CharacterClassComponent implements RegexComponent
 
     public function compile(): string
     {
-        if ($this->type === CharacterClassTypesEnum::RANGE) {
-            // For ranges, don't escape the dash
-            [$from, $to] = explode('-', $this->chars);
-            $escapedFrom = $this->escapeCharacterClass($from);
-            $escapedTo = $this->escapeCharacterClass($to);
-            $escaped = $escapedFrom . '-' . $escapedTo;
+        $prefix = $this->negated ? '^' : '';
+
+        // For ranges, handle the dash specially - it should not be escaped as it's the range operator
+        if ($this->classType === CharacterClassTypesEnum::RANGE) {
+            // Extract the range components
+            $rawChars = $this->chars->getRaw();
+
+            // For ranges, we know the format is "from-to", so take first and last character
+            // with the dash in between
+            if (strlen($rawChars) >= 3) {
+                $from = $rawChars[0];
+                $to = $rawChars[2];
+
+                // Create safe characters for from and to, then escape them individually
+                $fromSafe = SafeString::from($from);
+                $toSafe = SafeString::from($to);
+                $escapedChars = $fromSafe->escapedForCharacterClass() . '-' . $toSafe->escapedForCharacterClass();
+            } else {
+                // Fallback to regular escaping if format is unexpected
+                $escapedChars = $this->chars->escapedForCharacterClass();
+            }
         } else {
-            $escaped = $this->escapeCharacterClass($this->chars);
+            // For non-range character classes, use regular escaping
+            $escapedChars = $this->chars->escapedForCharacterClass();
         }
 
-        $negation = $this->negated ? '^' : '';
-
-        return '[' . $negation . $escaped . ']';
+        return '[' . $prefix . $escapedChars . ']';
     }
 
     public function getType(): string
     {
-        return $this->type->value;
+        return self::$type;
     }
 
     public function getMetadata(): array
     {
         return [
-            'type' => $this->getType(),
-            'chars' => $this->chars,
+            'type' => self::$type,
+            'chars' => $this->chars->getRaw(),
             'negated' => $this->negated,
-            'char_count' => strlen($this->chars),
-            'enum' => $this->type->name,
+            'classType' => $this->classType->value,
+            'hasSpecialCharacters' => $this->chars->hasSpecialCharacters(),
+            'specialCharacters' => array_map(
+                fn (SafeCharacter $char): string => $char->getRaw(),
+                $this->chars->getSpecialCharacters()
+            ),
         ];
     }
 
@@ -87,27 +108,19 @@ class CharacterClassComponent implements RegexComponent
 
     public function getDescription(): string
     {
-        if ($this->type === CharacterClassTypesEnum::RANGE) {
-            [$from, $to] = explode('-', $this->chars);
+        if ($this->classType === CharacterClassTypesEnum::RANGE) {
+            $rawChars = $this->chars->getRaw();
 
-            return "match character range from '{$from}' to '{$to}'";
+            if (strlen($rawChars) >= 3) {
+                $from = $rawChars[0];
+                $to = $rawChars[2];
+
+                return "Character range: from '{$from}' to '{$to}'";
+            }
         }
 
-        $operation = $this->negated ? 'match none of' : $this->type->getDescription();
+        $action = $this->negated ? 'none of' : 'any of';
 
-        return "{$operation} '{$this->chars}'";
-    }
-
-    /**
-     * Escape special characters within character classes
-     */
-    private function escapeCharacterClass(string $chars): string
-    {
-        return strtr($chars, [
-            '\\' => '\\\\',
-            ']' => '\\]',
-            '^' => '\\^',
-            '-' => '\\-',
-        ]);
+        return "Character class: {$action} '{$this->chars->getRaw()}'";
     }
 }
