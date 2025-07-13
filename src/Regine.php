@@ -7,6 +7,7 @@ namespace Regine;
 use Regine\Collections\PatternCollection;
 use Regine\Composables\HasAnchors;
 use Regine\Composables\HasCharacterClasses;
+use Regine\Composables\HasGroups;
 use Regine\Composables\HasLiterals;
 use Regine\Composables\HasQuantifiers;
 use Regine\Composables\HasShorthands;
@@ -15,6 +16,7 @@ class Regine
 {
     use HasAnchors,
         HasCharacterClasses,
+        HasGroups,
         HasLiterals,
         HasQuantifiers,
         HasShorthands;
@@ -85,9 +87,9 @@ class Regine
      */
     public function matches(string $subject): array
     {
-        preg_match_all($this->compile(), $subject, $matches);
+        preg_match($this->compile(), $subject, $matches);
 
-        return $matches[0] ?? [];
+        return $matches;
     }
 
     /**
