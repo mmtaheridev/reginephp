@@ -14,7 +14,8 @@
     },
     "require-dev": {
         "pestphp/pest": "^3.8",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "tightenco/duster": "^3.2"
     },
     "autoload": {
         "psr-4": {
