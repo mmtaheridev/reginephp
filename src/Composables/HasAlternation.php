@@ -12,6 +12,12 @@ use Regine\Enums\GroupTypesEnum;
 use Regine\Regine;
 use RuntimeException;
 
+/**
+ * Trait for adding alternation methods to Regine
+ * 
+ * This trait provides methods for creating alternation patterns
+ * (OR) between multiple alternatives
+ */
 trait HasAlternation
 {
     /**

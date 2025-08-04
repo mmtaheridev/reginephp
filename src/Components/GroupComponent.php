@@ -9,6 +9,12 @@ use Regine\Contracts\RegexComponent;
 use Regine\Enums\GroupTypesEnum;
 use Regine\Regine;
 
+/**
+ * Group component
+ * 
+ * Implements a regex component that represents a group
+ * (capturing, non-capturing, named, atomic, conditional)
+ */
 class GroupComponent implements RegexComponent
 {
     private GroupTypesEnum $type;
@@ -17,6 +23,9 @@ class GroupComponent implements RegexComponent
     private ?string $condition;
     private ?string $elsePattern;
 
+    /**
+     * Create a group component
+     */
     public function __construct(
         GroupTypesEnum $type,
         Regine|string $pattern,
@@ -33,6 +42,9 @@ class GroupComponent implements RegexComponent
         $this->validateParameters();
     }
 
+    /**
+     * Compile the group component into a regex string
+     */
     public function compile(): string
     {
         return match ($this->type) {
@@ -44,11 +56,19 @@ class GroupComponent implements RegexComponent
         };
     }
 
+    /**
+     * Get the type of the group component
+     */
     public function getType(): string
     {
         return 'group';
     }
 
+    /**
+     * Get metadata about the group component
+     *
+     * @return array<type: string, group_type: string, pattern: string, name: string, condition: string, else_pattern: string, enum: string>
+     */
     public function getMetadata(): array
     {
         return [
@@ -62,11 +82,17 @@ class GroupComponent implements RegexComponent
         ];
     }
 
+    /**
+     * Check if the group component can be quantified
+     */
     public function canBeQuantified(): bool
     {
         return true;
     }
 
+    /**
+     * Get a human-readable description of the group component
+     */
     public function getDescription(): string
     {
         $description = $this->type->getDescription();

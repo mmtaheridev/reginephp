@@ -15,6 +15,9 @@ enum ShorthandTypesEnum: string
     case NON_WHITESPACE = 'nonWhitespace';
     case LETTER = 'letter';
 
+    /**
+     * Get the regex string for the shorthand type
+     */
     public function getRegex(): string
     {
         return match ($this) {
@@ -29,6 +32,9 @@ enum ShorthandTypesEnum: string
         };
     }
 
+    /**
+     * Get the description for the shorthand type
+     */
     public function getDescription(): string
     {
         return match ($this) {

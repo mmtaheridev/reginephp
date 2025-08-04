@@ -13,6 +13,9 @@ enum AnchorTypesEnum: string
     case WORD_BOUNDARY = 'wordBoundary';
     case NON_WORD_BOUNDARY = 'nonWordBoundary';
 
+    /**
+     * Get the regex string for the anchor type
+     */
     public function getRegex(): string
     {
         return match ($this) {
@@ -25,6 +28,9 @@ enum AnchorTypesEnum: string
         };
     }
 
+    /**
+     * Get the description for the anchor type
+     */
     public function getDescription(): string
     {
         return match ($this) {

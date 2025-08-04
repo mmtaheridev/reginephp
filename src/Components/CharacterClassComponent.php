@@ -10,6 +10,12 @@ use Regine\Enums\CharacterClassTypesEnum;
 use Regine\ValueObjects\SafeCharacter;
 use Regine\ValueObjects\SafeString;
 
+/**
+ * Character class component
+ * 
+ * Implements a regex component that represents a character class
+ * (any of, none of, range)
+ */
 class CharacterClassComponent implements RegexComponent
 {
     private static string $type = 'CHARACTER_CLASS';
@@ -28,16 +34,25 @@ class CharacterClassComponent implements RegexComponent
         $this->classType = $type;
     }
 
+    /**
+     * Create a character class component for `any of` a set of characters
+     */
     public static function anyOf(string $chars): self
     {
         return new self($chars, false, CharacterClassTypesEnum::ANY_OF);
     }
 
+    /**
+     * Create a character class component for `none of` a set of characters
+     */
     public static function noneOf(string $chars): self
     {
         return new self($chars, true, CharacterClassTypesEnum::NONE_OF);
     }
 
+    /**
+     * Create a character class component for a range of characters
+     */
     public static function range(string $from, string $to): self
     {
         if (strlen($from) !== 1 || strlen($to) !== 1) {
@@ -50,6 +65,9 @@ class CharacterClassComponent implements RegexComponent
         return new self($from . '-' . $to, false, CharacterClassTypesEnum::RANGE);
     }
 
+    /**
+     * Compile the character class component into a regex string
+     */
     public function compile(): string
     {
         $prefix = $this->negated ? '^' : '';
@@ -81,11 +99,19 @@ class CharacterClassComponent implements RegexComponent
         return '[' . $prefix . $escapedChars . ']';
     }
 
+    /**
+     * Get the type of the character class component
+     */
     public function getType(): string
     {
         return self::$type;
     }
 
+    /**
+     * Get metadata about the character class component
+     *
+     * @return array<type: string, chars: string, negated: bool, classType: string, hasSpecialCharacters: bool, specialCharacters: array<string>>
+     */
     public function getMetadata(): array
     {
         return [
@@ -101,11 +127,17 @@ class CharacterClassComponent implements RegexComponent
         ];
     }
 
+    /**
+     * Check if the character class component can be quantified
+     */
     public function canBeQuantified(): bool
     {
         return true;
     }
 
+    /**
+     * Get a human-readable description of the character class component
+     */
     public function getDescription(): string
     {
         if ($this->classType === CharacterClassTypesEnum::RANGE) {

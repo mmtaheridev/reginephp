@@ -12,6 +12,9 @@ enum GroupTypesEnum: string
     case ATOMIC = 'ATOMIC';
     case CONDITIONAL = 'CONDITIONAL';
 
+    /**
+     * Get the regex prefix string for the group type
+     */
     public function getRegexPrefix(): string
     {
         return match ($this) {
@@ -23,6 +26,9 @@ enum GroupTypesEnum: string
         };
     }
 
+    /**
+     * Get the regex suffix string for the group type
+     */
     public function getRegexSuffix(): string
     {
         return match ($this) {
@@ -34,6 +40,9 @@ enum GroupTypesEnum: string
         };
     }
 
+    /**
+     * Get the description for the group type
+     */
     public function getDescription(): string
     {
         return match ($this) {

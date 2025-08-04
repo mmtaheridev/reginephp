@@ -6,11 +6,19 @@ namespace Regine\Collections;
 
 use Regine\Contracts\RegexComponent;
 
+/**
+ * Collection of RegexComponent instances
+ * 
+ * Every Regine instance is possibly a collection of RegexComponent instances
+ */
 class PatternCollection
 {
     /** @var array<RegexComponent> */
     private array $components = [];
 
+    /**
+     * Add a component to the collection
+     */
     public function add(RegexComponent $component): self
     {
         $this->components[] = $component;
@@ -18,6 +26,9 @@ class PatternCollection
         return $this;
     }
 
+    /**
+     * Compile the collection into a regex string
+     */
     public function compile(): string
     {
         $pattern = '';

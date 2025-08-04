@@ -13,6 +13,9 @@ enum QuantifierTypesEnum: string
     case AT_LEAST = 'atLeast';
     case BETWEEN = 'between';
 
+    /**
+     * Get the base description for the quantifier type
+     */
     public function getBaseDescription(): string
     {
         return match ($this) {
@@ -26,7 +29,9 @@ enum QuantifierTypesEnum: string
     }
 
     /**
-     * @param  array<string, int>  $params
+     * Get the regex string for the quantifier type
+     *
+     * @param array<string, int> $params
      */
     public function getRegex(array $params = []): string
     {

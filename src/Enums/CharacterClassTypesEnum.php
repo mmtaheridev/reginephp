@@ -10,6 +10,9 @@ enum CharacterClassTypesEnum: string
     case NONE_OF = 'noneOf';
     case RANGE = 'range';
 
+    /**
+     * Get the description for the character class type
+     */
     public function getDescription(): string
     {
         return match ($this) {
