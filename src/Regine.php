@@ -10,6 +10,7 @@ use Regine\Composables\HasAnchors;
 use Regine\Composables\HasCharacterClasses;
 use Regine\Composables\HasGroups;
 use Regine\Composables\HasLiterals;
+use Regine\Composables\HasLookarounds;
 use Regine\Composables\HasQuantifiers;
 use Regine\Composables\HasShorthands;
 
@@ -20,6 +21,7 @@ class Regine
         HasCharacterClasses,
         HasGroups,
         HasLiterals,
+        HasLookarounds,
         HasQuantifiers,
         HasShorthands;
 
@@ -30,11 +32,17 @@ class Regine
         $this->components = new PatternCollection;
     }
 
+    /**
+     * Create a new Regine instance (Starting to build a pattern)
+     */
     public static function make(): self
     {
         return new self;
     }
 
+    /**
+     * Compile the pattern with delimiters
+     */
     public function compile(string $delimiter = '/'): string
     {
         return $delimiter . $this->components->compile() . $delimiter;
@@ -54,6 +62,18 @@ class Regine
     public function compileRaw(): string
     {
         return $this->components->compile();
+    }
+
+    /**
+     * Get the raw pattern without delimiters (raw pattern)
+     *
+     * alias for compileRaw()
+     * 
+     * @see compileRaw()
+     */
+    public function raw(): string
+    {
+        return $this->compileRaw();
     }
 
     /**
@@ -113,7 +133,7 @@ class Regine
     /**
      * Debug method to show the pattern structure
      *
-     * @return array<string, mixed>
+     * @return array<pattern: string, compiled: string, description: string, component_count: int, metadata: array<array<string, mixed>>>
      */
     public function debug(): array
     {
