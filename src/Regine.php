@@ -8,6 +8,7 @@ use Regine\Collections\PatternCollection;
 use Regine\Composables\HasAlternation;
 use Regine\Composables\HasAnchors;
 use Regine\Composables\HasCharacterClasses;
+use Regine\Composables\HasFlags;
 use Regine\Composables\HasGroups;
 use Regine\Composables\HasLiterals;
 use Regine\Composables\HasLookarounds;
@@ -19,6 +20,7 @@ class Regine
     use HasAlternation,
         HasAnchors,
         HasCharacterClasses,
+        HasFlags,
         HasGroups,
         HasLiterals,
         HasLookarounds,
@@ -41,11 +43,17 @@ class Regine
     }
 
     /**
-     * Compile the pattern with delimiters
+     * Compile the pattern with delimiters and flags
+     *
+     * <code>
+     *      $regine = Regine::make()->literal('test')->caseInsensitive(); // /test/i
+     *      $regine = Regine::make()->literal('test')->withFlags(['i', 'm']); // /test/im
+     * </code>
      */
     public function compile(string $delimiter = '/'): string
     {
-        return $delimiter . $this->components->compile() . $delimiter;
+        $flags = $this->getFlagsString();
+        return $delimiter . $this->components->compile() . $delimiter . $flags;
     }
 
     /**
@@ -133,7 +141,7 @@ class Regine
     /**
      * Debug method to show the pattern structure
      *
-     * @return array<pattern: string, compiled: string, description: string, component_count: int, metadata: array<array<string, mixed>>>
+     * @return array<string, mixed>
      */
     public function debug(): array
     {
@@ -142,6 +150,7 @@ class Regine
             'compiled' => $this->compile(),
             'description' => $this->describe(),
             'component_count' => $this->getComponentCount(),
+            'flags' => $this->getFlagsString(),
             'metadata' => $this->getMetadata(),
         ];
     }
