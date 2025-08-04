@@ -73,7 +73,7 @@ class AlternationComponent implements RegexComponent
     /**
      * Get metadata about the alternation component
      *
-     * @return array<type: string, alternatives: array<string>, count: int>
+     * @return array<string, mixed>
      */
     public function getMetadata(): array
     {

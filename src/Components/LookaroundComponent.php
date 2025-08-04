@@ -106,7 +106,7 @@ class LookaroundComponent implements RegexComponent
     /**
      * Get metadata about the lookaround component
      *
-     * @return array<type: string, lookaround_type: string, pattern: string, enum: string>
+     * @return array<string, mixed>
      */
     public function getMetadata(): array
     {

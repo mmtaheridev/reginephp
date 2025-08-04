@@ -93,7 +93,7 @@ class AnchorComponent implements RegexComponent
     /**
      * Get metadata about the anchor component
      *
-     * @return array<type: string, anchor: string, enum: string>
+     * @return array<string, mixed>
      */
     public function getMetadata(): array
     {

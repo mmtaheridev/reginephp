@@ -67,7 +67,7 @@ class GroupComponent implements RegexComponent
     /**
      * Get metadata about the group component
      *
-     * @return array<type: string, group_type: string, pattern: string, name: string, condition: string, else_pattern: string, enum: string>
+     * @return array<string, mixed>
      */
     public function getMetadata(): array
     {

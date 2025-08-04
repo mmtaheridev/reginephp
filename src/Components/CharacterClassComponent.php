@@ -110,7 +110,7 @@ class CharacterClassComponent implements RegexComponent
     /**
      * Get metadata about the character class component
      *
-     * @return array<type: string, chars: string, negated: bool, classType: string, hasSpecialCharacters: bool, specialCharacters: array<string>>
+     * @return array<string, mixed>
      */
     public function getMetadata(): array
     {
