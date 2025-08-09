@@ -14,15 +14,15 @@ use Regine\ValueObjects\SafeString;
  * Character class component
  *
  * Implements a regex component that represents a character class
- * (any of, none of, range)
+ * (any of, none of, range, none of range)
  */
 class CharacterClassComponent implements RegexComponent
 {
     public const TYPE = 'CHARACTER_CLASS';
 
-    private SafeString $chars;
-    private bool $negated;
-    private CharacterClassTypesEnum $classType;
+    private readonly SafeString $chars;
+    private readonly bool $negated;
+    private readonly CharacterClassTypesEnum $classType;
 
     /**
      * Initializes a new character class component with the specified characters, negation flag, and class type.
@@ -51,6 +51,7 @@ class CharacterClassComponent implements RegexComponent
      *
      * @param  string  $chars  The set of characters to include in the character class.
      * @return self A new CharacterClassComponent representing the specified character set.
+     * @throws InvalidArgumentException If $chars is empty.
      */
     public static function anyOf(string $chars): self
     {
@@ -66,6 +67,7 @@ class CharacterClassComponent implements RegexComponent
      *
      * @param  string  $chars  The characters to exclude from the match.
      * @return self The constructed character class component.
+     * @throws InvalidArgumentException If $chars is empty.
      */
     public static function noneOf(string $chars): self
     {
@@ -184,13 +186,13 @@ class CharacterClassComponent implements RegexComponent
      */
     public function getType(): string
     {
-        return static::TYPE;
+        return self::TYPE;
     }
 
     /**
      * Returns metadata describing the character class component, including type, raw characters, negation status, class type, and special character details.
      *
-     * @return array<string, mixed> Associative array with keys: 'type', 'chars', 'negated', 'classType', 'hasSpecialCharacters', and 'specialCharacters'.
+     * @return array<string, mixed> Associative array with keys: 'type', 'chars', 'negated', 'classType', 'hasSpecialCharacters', 'specialCharacters', and 'specialCharactersEscaped'.
      */
     public function getMetadata(): array
     {
@@ -202,6 +204,10 @@ class CharacterClassComponent implements RegexComponent
             'hasSpecialCharacters' => $this->chars->hasSpecialCharacters(),
             'specialCharacters' => array_map(
                 fn (SafeCharacter $char): string => $char->getRaw(),
+                $this->chars->getSpecialCharacters()
+            ),
+            'specialCharactersEscaped' => array_map(
+                fn (SafeCharacter $char): string => $char->escapedForCharacterClass(),
                 $this->chars->getSpecialCharacters()
             ),
         ];
@@ -239,7 +245,9 @@ class CharacterClassComponent implements RegexComponent
                 $rightLen = mb_strlen($parts[1], 'UTF-8');
                 $to = mb_substr($parts[1], $rightLen - 1, 1, 'UTF-8');
 
-                return "Character range: from '{$from}' to '{$to}'";
+                $prefix = $this->negated ? 'Negated character' : 'Character';
+
+                return "{$prefix} range: from '{$from}' to '{$to}'";
             }
         }
 

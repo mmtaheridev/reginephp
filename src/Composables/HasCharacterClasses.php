@@ -14,6 +14,7 @@ trait HasCharacterClasses
      *
      * @param  string  $chars  The characters to include inside the class, e.g. "abc" → `[abc]`.
      * @return self Fluent builder instance for chaining.
+     * @throws InvalidArgumentException If $chars is empty.
      */
     public function anyOf(string $chars): self
     {
@@ -27,6 +28,7 @@ trait HasCharacterClasses
      *
      * @param  string  $chars  The characters to exclude inside the class, e.g. "abc" → `[^abc]`.
      * @return self Fluent builder instance for chaining.
+     * @throws InvalidArgumentException If $chars is empty.
      */
     public function noneOf(string $chars): self
     {
@@ -42,7 +44,7 @@ trait HasCharacterClasses
      * @param  string  $to  The ending character of the range (single UTF-8 character).
      * @return self Fluent builder instance for chaining.
      *
-     * @throws InvalidArgumentException If boundaries are not single characters or start > end.
+     * @throws InvalidArgumentException If boundaries are not single characters or start > end or if $from or $to is empty.
      */
     public function range(string $from, string $to): self
     {
