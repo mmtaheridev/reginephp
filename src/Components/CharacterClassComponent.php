@@ -18,7 +18,7 @@ use Regine\ValueObjects\SafeString;
  */
 class CharacterClassComponent implements RegexComponent
 {
-    private static string $type = 'CHARACTER_CLASS';
+    public const TYPE = 'CHARACTER_CLASS';
 
     private SafeString $chars;
     private bool $negated;
@@ -33,8 +33,11 @@ class CharacterClassComponent implements RegexComponent
      *
      * @throws InvalidArgumentException If the character string is empty.
      */
-    public function __construct(string $chars, bool $negated, CharacterClassTypesEnum $type)
-    {
+    public function __construct(
+        string $chars,
+        bool $negated,
+        CharacterClassTypesEnum $type
+    ) {
         if ($chars === '') {
             throw new InvalidArgumentException('Character class cannot be empty.');
         }
@@ -51,7 +54,11 @@ class CharacterClassComponent implements RegexComponent
      */
     public static function anyOf(string $chars): self
     {
-        return new self($chars, false, CharacterClassTypesEnum::ANY_OF);
+        return new self(
+            chars: $chars,
+            negated: false,
+            type: CharacterClassTypesEnum::ANY_OF
+        );
     }
 
     /**
@@ -62,7 +69,11 @@ class CharacterClassComponent implements RegexComponent
      */
     public static function noneOf(string $chars): self
     {
-        return new self($chars, true, CharacterClassTypesEnum::NONE_OF);
+        return new self(
+            chars: $chars,
+            negated: true,
+            type: CharacterClassTypesEnum::NONE_OF
+        );
     }
 
     /**
@@ -76,12 +87,57 @@ class CharacterClassComponent implements RegexComponent
      */
     public static function range(string $from, string $to): self
     {
-        // Validate single-character boundaries using multibyte length
+        static::validateRange($from, $to);
+
+        return new self($from . '-' . $to, false, CharacterClassTypesEnum::RANGE);
+    }
+
+    /**
+     * Creates a negated character range (e.g., [^a-z]).
+     *
+     * Produces a character class that matches any character not in the given inclusive range.
+     *
+     * @param  string  $from  The starting character of the range (single UTF-8 character).
+     * @param  string  $to  The ending character of the range (single UTF-8 character).
+     * @return self The character class component for the specified negated range.
+     *
+     * @throws InvalidArgumentException If boundaries are not single characters or start > end.
+     *
+     * <code>
+     * // Matches one or more non-digit characters
+     * $regex = Regine::make()
+     *     ->noneOfRange('0', '9')
+     *     ->oneOrMore()
+     *     ->compile(); // '/[^0-9]+/'
+     * </code>
+     */
+    public static function noneOfRange(string $from, string $to): self
+    {
+        static::validateRange($from, $to);
+
+        return new self(
+            chars: $from . '-' . $to,
+            negated: true,
+            type: CharacterClassTypesEnum::RANGE
+        );
+    }
+
+    /**
+     * Validates the range boundaries.
+     *
+     * @param  string  $from  The starting character of the range.
+     * @param  string  $to  The ending character of the range.
+     *
+     * @throws InvalidArgumentException If the range boundaries are not single characters.
+     */
+    protected static function validateRange(string $from, string $to): void
+    {
+        // Validate that the range boundaries are single characters
         if (mb_strlen($from, 'UTF-8') !== 1 || mb_strlen($to, 'UTF-8') !== 1) {
             throw new InvalidArgumentException('Range boundaries must be single characters.');
         }
 
-        // Compare using Unicode code points for proper ordering
+        // Validate that the range boundaries are valid UTF-8 characters
         $fromCodePoint = mb_ord($from, 'UTF-8');
         $toCodePoint = mb_ord($to, 'UTF-8');
 
@@ -89,11 +145,10 @@ class CharacterClassComponent implements RegexComponent
             throw new InvalidArgumentException('Range boundaries must be valid UTF-8 characters.');
         }
 
+        // Validate that the range start is less than or equal to the range end
         if ($fromCodePoint > $toCodePoint) {
             throw new InvalidArgumentException('Range start must be less than or equal to range end.');
         }
-
-        return new self($from . '-' . $to, false, CharacterClassTypesEnum::RANGE);
     }
 
     /**
@@ -129,7 +184,7 @@ class CharacterClassComponent implements RegexComponent
      */
     public function getType(): string
     {
-        return self::$type;
+        return static::TYPE;
     }
 
     /**
@@ -140,7 +195,7 @@ class CharacterClassComponent implements RegexComponent
     public function getMetadata(): array
     {
         return [
-            'type' => self::$type,
+            'type' => static::TYPE,
             'chars' => $this->chars->getRaw(),
             'negated' => $this->negated,
             'classType' => $this->classType->value,

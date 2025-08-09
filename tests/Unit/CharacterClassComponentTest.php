@@ -23,9 +23,19 @@ describe('Basic Character Classes', function () {
         expect($regex)->toBe('/[a-z]/');
     });
 
+    it('adds noneOfRange', function () {
+        $regex = Regine::make()->noneOfRange('a', 'z')->compile();
+        expect($regex)->toBe('/[^a-z]/');
+    });
+
     it('allows equal characters in range', function () {
         $regex = Regine::make()->range('a', 'a')->compile();
         expect($regex)->toBe('/[a-a]/');
+    });
+
+    it('allows equal characters in noneOfRange', function () {
+        $regex = Regine::make()->noneOfRange('a', 'a')->compile();
+        expect($regex)->toBe('/[^a-a]/');
     });
 
     it('adds letter character class', function () {
@@ -80,6 +90,14 @@ describe('Character Class Error Handling', function () {
     it('throws for invalid emoji range order', function () {
         Regine::make()->range('😇', '😀');
     })->throws(InvalidArgumentException::class, 'Range start must be less than or equal to range end.');
+
+    it('throws for invalid noneOfRange boundary length', function () {
+        Regine::make()->noneOfRange('ab', 'z');
+    })->throws(InvalidArgumentException::class, 'Range boundaries must be single characters.');
+
+    it('throws for invalid noneOfRange order', function () {
+        Regine::make()->noneOfRange('z', 'a');
+    })->throws(InvalidArgumentException::class, 'Range start must be less than or equal to range end.');
 });
 
 // Range tests
@@ -109,9 +127,19 @@ describe('Character Ranges', function () {
         expect($regex)->toBe('/[α-γ]/');
     });
 
+    it('creates negated unicode noneOfRange with multibyte characters', function () {
+        $regex = Regine::make()->noneOfRange('α', 'γ')->compile();
+        expect($regex)->toBe('/[^α-γ]/');
+    });
+
     it('creates emoji range with correct ordering', function () {
         $regex = Regine::make()->range('😀', '😇')->compile();
         expect($regex)->toBe('/[😀-😇]/');
+    });
+
+    it('creates negated emoji noneOfRange with correct ordering', function () {
+        $regex = Regine::make()->noneOfRange('😀', '😇')->compile();
+        expect($regex)->toBe('/[^😀-😇]/');
     });
 
     it('parses range when internal string has variable length parts', function () {
@@ -160,6 +188,11 @@ describe('Character Class Integration', function () {
     it('chains character classes', function () {
         $regex = Regine::make()->anyOf('abc')->noneOf('xyz')->compile();
         expect($regex)->toBe('/[abc][^xyz]/');
+    });
+
+    it('applies quantifier to noneOfRange', function () {
+        $regex = Regine::make()->noneOfRange('0', '9')->oneOrMore()->compile();
+        expect($regex)->toBe('/[^0-9]+/');
     });
 });
 
