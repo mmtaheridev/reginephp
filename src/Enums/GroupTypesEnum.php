@@ -13,7 +13,9 @@ enum GroupTypesEnum: string
     case CONDITIONAL = 'CONDITIONAL';
 
     /**
-     * Get the regex prefix string for the group type
+     * Returns the regex prefix string corresponding to the group type.
+     *
+     * @return string The regex prefix for this group type.
      */
     public function getRegexPrefix(): string
     {
@@ -27,21 +29,24 @@ enum GroupTypesEnum: string
     }
 
     /**
-     * Get the regex suffix string for the group type
+     * Returns the regex suffix string corresponding to the group type.
+     *
+     * @return string The regex suffix for this group type.
      */
     public function getRegexSuffix(): string
     {
         return match ($this) {
             self::CAPTURING,
             self::NON_CAPTURING,
-            self::ATOMIC => ')',
+            self::ATOMIC, self::CONDITIONAL => ')',
             self::NAMED => '>',
-            self::CONDITIONAL => ')',
         };
     }
 
     /**
-     * Get the description for the group type
+     * Returns a human-readable description of the regex group type represented by this enum case.
+     *
+     * @return string The description of the group type.
      */
     public function getDescription(): string
     {

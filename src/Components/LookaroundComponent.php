@@ -13,6 +13,12 @@ class LookaroundComponent implements RegexComponent
     private LookaroundTypesEnum $type;
     private string $pattern;
 
+    /**
+     * Initializes a LookaroundComponent with the specified lookaround type and pattern.
+     *
+     * @param  LookaroundTypesEnum  $type  The type of lookaround assertion to use.
+     * @param  Regine|string  $pattern  The pattern to be used within the lookaround, either as a Regine object or a string.
+     */
     public function __construct(LookaroundTypesEnum $type, Regine|string $pattern)
     {
         $this->type = $type;
@@ -20,16 +26,10 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Create a positive lookahead component
-     * 
-     * positive lookahead is a lookahead that asserts that the pattern exists before the current position
-     * 
-     * <code>
-     * // Regular expression: `(?=pattern)`
-     * 
-     * $pattern = Regine::make()->positiveLookahead('test')->compile();
-     * echo $pattern; // /(?=test)/
-     * </code>
+     * Creates a positive lookahead regex component that asserts the given pattern must follow the current position.
+     *
+     * @param  Regine|string  $pattern  The pattern to assert in the lookahead.
+     * @return self A new LookaroundComponent representing a positive lookahead.
      */
     public static function positiveLookahead(Regine|string $pattern): self
     {
@@ -37,16 +37,12 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Create a negative lookahead component
-     * 
-     * negative lookahead is a lookahead that asserts that the pattern does not exist before the current position
-     * 
-     * <code>
-     * // Regular expression: `(?!pattern)`
-     * 
-     * $pattern = Regine::make()->negativeLookahead('test')->compile();
-     * echo $pattern; // /(?!test)/
-     * </code>
+     * Creates a negative lookahead regex component.
+     *
+     * A negative lookahead asserts that the specified pattern does not occur at the current position in the input.
+     *
+     * @param  Regine|string  $pattern  The pattern to assert does not follow the current position.
+     * @return self A new negative lookahead component.
      */
     public static function negativeLookahead(Regine|string $pattern): self
     {
@@ -54,16 +50,12 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Create a positive lookbehind component
-     * 
-     * positive lookbehind is a lookbehind that asserts that the pattern exists after the current position
-     * 
-     * <code>
-     * // Regular expression: `(?<=pattern)`
-     * 
-     * $pattern = Regine::make()->positiveLookbehind('test')->compile();
-     * echo $pattern; // /(?<=test)/
-     * </code>
+     * Creates a positive lookbehind regex component.
+     *
+     * A positive lookbehind asserts that the specified pattern must appear immediately before the current position in the input.
+     *
+     * @param  Regine|string  $pattern  The pattern to assert behind the current position.
+     * @return self A new LookaroundComponent representing the positive lookbehind assertion.
      */
     public static function positiveLookbehind(Regine|string $pattern): self
     {
@@ -71,16 +63,10 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Create a negative lookbehind component
-     * 
-     * negative lookbehind is a lookbehind that asserts that the pattern does not exist after the current position
-     * 
-     * <code>
-     * // Regular expression: `(?<!pattern)`
-     * 
-     * $pattern = Regine::make()->negativeLookbehind('test')->compile();
-     * echo $pattern; // /(?<!test)/
-     * </code>
+     * Creates a regex negative lookbehind component that asserts the specified pattern does not precede the current position.
+     *
+     * @param  Regine|string  $pattern  The pattern to use in the negative lookbehind assertion.
+     * @return self A new LookaroundComponent representing the negative lookbehind.
      */
     public static function negativeLookbehind(Regine|string $pattern): self
     {
@@ -88,7 +74,11 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Compile the lookaround component into a regex string
+     * Returns the regex string representation of the lookaround component.
+     *
+     * The returned string is formatted according to the lookaround type and the compiled pattern.
+     *
+     * @return string The compiled regex lookaround pattern.
      */
     public function compile(): string
     {
@@ -96,7 +86,9 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Get the type of the lookaround component
+     * Returns the string identifier for this component type.
+     *
+     * @return string The string 'lookaround'.
      */
     public function getType(): string
     {
@@ -104,9 +96,11 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Get metadata about the lookaround component
+     * Returns metadata describing the lookaround component.
      *
-     * @return array<string, mixed>
+     * The metadata includes the component type, lookaround type value, pattern string, and enum name.
+     *
+     * @return array<string, mixed> Associative array with keys: 'type', 'lookaround_type', 'pattern', and 'enum'.
      */
     public function getMetadata(): array
     {
@@ -119,7 +113,9 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Check if the lookaround component can be quantified
+     * Indicates that lookaround components cannot be quantified.
+     *
+     * @return bool Always returns false.
      */
     public function canBeQuantified(): bool
     {
@@ -127,7 +123,9 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Get a human-readable description of the lookaround component
+     * Returns a human-readable description of the lookaround assertion, including its type and pattern.
+     *
+     * @return string The description of the lookaround component.
      */
     public function getDescription(): string
     {
@@ -135,7 +133,12 @@ class LookaroundComponent implements RegexComponent
     }
 
     /**
-     * Compile a pattern (Regine object or string) to its string representation
+     * Converts a Regine object or string pattern to its string representation.
+     *
+     * If the pattern is a Regine object, its raw compiled pattern is returned; otherwise, the string is returned as-is.
+     *
+     * @param  Regine|string  $pattern  The pattern to compile.
+     * @return string The compiled pattern string.
      */
     private function compilePattern(Regine|string $pattern): string
     {
@@ -146,4 +149,4 @@ class LookaroundComponent implements RegexComponent
 
         return $pattern;
     }
-} 
+}

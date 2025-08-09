@@ -11,7 +11,9 @@ enum CharacterClassTypesEnum: string
     case RANGE = 'range';
 
     /**
-     * Get the description for the character class type
+     * Returns a human-readable description for the character class type.
+     *
+     * @return string The description corresponding to the enum case.
      */
     public function getDescription(): string
     {

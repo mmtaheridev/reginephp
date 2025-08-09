@@ -29,9 +29,9 @@ enum SpecialCharacterEnum: string
     case FORWARD_SLASH = '/';
 
     /**
-     * Get all special characters that need escaping
+     * Returns an array of all special character enum cases.
      *
-     * @return array<SpecialCharacterEnum>
+     * @return array<SpecialCharacterEnum> List of all defined special character enum cases.
      */
     public static function getAll(): array
     {
@@ -39,7 +39,10 @@ enum SpecialCharacterEnum: string
     }
 
     /**
-     * Check if a character is a special regex character
+     * Determines whether the given character is a special regular expression character.
+     *
+     * @param  string  $char  The character to check.
+     * @return bool True if the character is a special regex character; otherwise, false.
      */
     public static function isSpecial(string $char): bool
     {
@@ -47,7 +50,10 @@ enum SpecialCharacterEnum: string
     }
 
     /**
-     * Get the enum case for a character if it's special
+     * Returns the enum case corresponding to the given character if it is a special character.
+     *
+     * @param  string  $char  The character to check.
+     * @return self|null The matching enum case, or null if the character is not special.
      */
     public static function fromChar(string $char): ?self
     {
@@ -55,7 +61,9 @@ enum SpecialCharacterEnum: string
     }
 
     /**
-     * Get the escaped version of the character for use in regex
+     * Returns the regex-escaped string representation of the special character.
+     *
+     * @return string The character escaped for use in regular expressions.
      */
     public function escaped(): string
     {
@@ -85,7 +93,11 @@ enum SpecialCharacterEnum: string
     }
 
     /**
-     * Get the character class escaped version (different rules for character classes)
+     * Returns the character escaped appropriately for use inside a regex character class.
+     *
+     * Only certain characters (`\`, `]`, `^`, `-`) are escaped; all others are returned as-is.
+     *
+     * @return string The character class-escaped version of the special character.
      */
     public function escapedForCharacterClass(): string
     {

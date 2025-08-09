@@ -8,7 +8,7 @@ use Regine\Contracts\RegexComponent;
 
 /**
  * Collection of RegexComponent instances
- * 
+ *
  * Every Regine instance is possibly a collection of RegexComponent instances
  */
 class PatternCollection
@@ -17,7 +17,12 @@ class PatternCollection
     private array $components = [];
 
     /**
-     * Add a component to the collection
+     * Adds a regex component to the collection.
+     *
+     * Enables method chaining by returning the current PatternCollection instance.
+     *
+     * @param  RegexComponent  $component  The regex component to add.
+     * @return self The current PatternCollection instance.
      */
     public function add(RegexComponent $component): self
     {
@@ -27,7 +32,9 @@ class PatternCollection
     }
 
     /**
-     * Compile the collection into a regex string
+     * Compiles all regex components in the collection into a single regex pattern string.
+     *
+     * @return string The concatenated regex pattern from all components.
      */
     public function compile(): string
     {
@@ -40,7 +47,9 @@ class PatternCollection
     }
 
     /**
-     * Get the last component added (for quantification)
+     * Returns the last added RegexComponent in the collection, or null if the collection is empty.
+     *
+     * @return RegexComponent|null The last RegexComponent instance, or null if none exist.
      */
     public function getLastComponent(): ?RegexComponent
     {
@@ -70,7 +79,9 @@ class PatternCollection
     }
 
     /**
-     * Check if collection is empty
+     * Determines whether the collection contains no components.
+     *
+     * @return bool True if the collection is empty, false otherwise.
      */
     public function isEmpty(): bool
     {

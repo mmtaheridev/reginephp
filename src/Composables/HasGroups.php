@@ -11,14 +11,11 @@ use Regine\Regine;
 trait HasGroups
 {
     /**
-     * Add a capturing group
+     * Adds a capturing group to the pattern.
      *
-     *  <code>
-     *      $regine = Regine::make()->group('abc'); // (abc)
-     *      $regine = Regine::make()->group(Regine::make()->literal('test')); // (test)
-     *  </code>
+     * Wraps the given pattern in a capturing group, equivalent to `(pattern)` in regular expressions. Accepts either a string pattern or a Regine instance.
      *
-     * @param  Regine|string  $pattern  The pattern to group
+     * @param  Regine|string  $pattern  The pattern to include in the capturing group.
      */
     public function group(Regine|string $pattern): self
     {
@@ -33,14 +30,11 @@ trait HasGroups
     }
 
     /**
-     * Add a non-capturing group
+     * Adds a non-capturing group to the regex pattern.
      *
-     *  <code>
-     *  $regine = Regine::make()->nonCapturingGroup('abc'); // (?:abc)
-     *  $regine = Regine::make()->nonCapturingGroup(Regine::make()->literal('test')); // (?:test)
-     *  </code>
+     * Wraps the given pattern in a non-capturing group `(?:pattern)` and adds it to the pattern builder.
      *
-     * @param  Regine|string  $pattern  The pattern to group
+     * @param  Regine|string  $pattern  The pattern to include in the non-capturing group.
      */
     public function nonCapturingGroup(Regine|string $pattern): self
     {
@@ -55,17 +49,12 @@ trait HasGroups
     }
 
     /**
-     * Add a named capturing group
+     * Adds a named capturing group to the pattern.
      *
-     *  <code>
-     *  $regine = Regine::make()->namedGroup('word', '\w+'); // (?<word>\w+)
-     *  $regine = Regine::make()->namedGroup('digits',
-     *      Regine::make()->digit()->oneOrMore()
-     *  ); // (?<digits>\d+)
-     *  </code>
+     * Creates a group of the form `(?<name>pattern)` using the provided group name and pattern.
      *
-     * @param  string  $name  The name for the group
-     * @param  Regine|string  $pattern  The pattern to group
+     * @param  string  $name  The name of the capturing group.
+     * @param  Regine|string  $pattern  The pattern to include within the named group.
      */
     public function namedGroup(string $name, Regine|string $pattern): self
     {
@@ -81,14 +70,11 @@ trait HasGroups
     }
 
     /**
-     * Add an atomic group (possessive group)
+     * Adds an atomic (possessive) group to the regex pattern.
      *
-     *  <code>
-     *  $regine = Regine::make()->atomicGroup('abc'); // (?>abc)
-     *  $regine = Regine::make()->atomicGroup(Regine::make()->literal('test')); // (?>test)
-     *  </code>
+     * Wraps the given pattern in an atomic group, preventing backtracking within the group.
      *
-     * @param  Regine|string  $pattern  The pattern to group
+     * @param  Regine|string  $pattern  The pattern to include in the atomic group.
      */
     public function atomicGroup(Regine|string $pattern): self
     {
@@ -103,16 +89,14 @@ trait HasGroups
     }
 
     /**
-     * Add a conditional group
+     * Adds a conditional regex group to the pattern.
      *
-     *  <code>
-     *  $regine = Regine::make()->conditionalGroup('1', 'yes', 'no'); // (?(1)yes|no)
-     *  $regine = Regine::make()->conditionalGroup('word', 'found'); // (?(word)found)
-     *  </code>
+     * Creates a group of the form `(?(condition)then|else)`, where the pattern used
+     * depends on whether the specified condition is met. The else pattern is optional.
      *
-     * @param  string  $condition  The condition to check
-     * @param  Regine|string  $then  The pattern if condition is true
-     * @param  Regine|string|null  $else  The pattern if condition is false (optional)
+     * @param  string  $condition  The condition to evaluate for the group (e.g., a group number or name).
+     * @param  Regine|string  $then  The pattern to use if the condition is true.
+     * @param  Regine|string|null  $else  The pattern to use if the condition is false (optional).
      */
     public function conditionalGroup(string $condition, Regine|string $then, Regine|string|null $else = null): self
     {

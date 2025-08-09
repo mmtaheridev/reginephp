@@ -14,22 +14,24 @@ enum AnchorTypesEnum: string
     case NON_WORD_BOUNDARY = 'nonWordBoundary';
 
     /**
-     * Get the regex string for the anchor type
+     * Returns the regex symbol corresponding to the anchor type.
+     *
+     * @return string The regex anchor symbol for this enum case.
      */
     public function getRegex(): string
     {
         return match ($this) {
-            self::START_OF_STRING => '^',
-            self::END_OF_STRING => '$',
-            self::START_OF_LINE => '^',
-            self::END_OF_LINE => '$',
+            self::START_OF_STRING, self::START_OF_LINE => '^',
+            self::END_OF_STRING, self::END_OF_LINE => '$',
             self::WORD_BOUNDARY => '\b',
             self::NON_WORD_BOUNDARY => '\B',
         };
     }
 
     /**
-     * Get the description for the anchor type
+     * Returns a human-readable description of the anchor type.
+     *
+     * @return string The description corresponding to the anchor type.
      */
     public function getDescription(): string
     {

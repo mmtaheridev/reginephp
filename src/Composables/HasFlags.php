@@ -15,19 +15,16 @@ trait HasFlags
     protected array $flags = [];
 
     /**
-     * Set specific flags for the regex pattern
+     * Replaces all current regex flags with the specified set.
      *
-     * <code>
-     *      $regine = Regine::make()->literal('test')->withFlags(['i', 'm']); // /test/im
-     *      $regine = Regine::make()->literal('test')->withFlags([RegexFlagsEnum::CASE_INSENSITIVE]); // /test/i
-     * </code>
+     * Accepts an array of flag strings or RegexFlagsEnum instances, normalizes them, and sets them as the active flags for the regex pattern.
      *
-     * @param  array<string|RegexFlagsEnum>  $flags  Array of flag strings or RegexFlagsEnum instances
+     * @param  array<string|RegexFlagsEnum>  $flags  Array of flag strings or RegexFlagsEnum instances to set.
      */
     public function withFlags(array $flags): self
     {
         $this->flags = [];
-        
+
         foreach ($flags as $flag) {
             if ($flag instanceof RegexFlagsEnum) {
                 $this->addFlag($flag);
@@ -43,11 +40,9 @@ trait HasFlags
     }
 
     /**
-     * Enable case-insensitive matching
+     * Enables case-insensitive regex matching by adding the corresponding flag.
      *
-     * <code>
-     *      $regine = Regine::make()->literal('Test')->caseInsensitive(); // /Test/i
-     * </code>
+     * @return self The current instance with the case-insensitive flag enabled.
      */
     public function caseInsensitive(): self
     {
@@ -55,9 +50,9 @@ trait HasFlags
     }
 
     /**
-     * Alias for caseInsensitive
-     * 
-     * @see caseInsensitive
+     * Enables the case-insensitive regex flag.
+     *
+     * Alias for the caseInsensitive() method.
      */
     public function i(): self
     {
@@ -65,11 +60,7 @@ trait HasFlags
     }
 
     /**
-     * Enable multiline mode (^ and $ match start/end of lines)
-     *
-     * <code>
-     *      $regine = Regine::make()->startOfString()->literal('test')->multiline(); // /^test/m
-     * </code>
+     * Enables multiline mode, allowing `^` and `$` to match the start and end of lines.
      */
     public function multiline(): self
     {
@@ -77,9 +68,9 @@ trait HasFlags
     }
 
     /**
-     * Alias for multiline
-     * 
-     * @see multiline
+     * Alias for enabling the multiline regex flag.
+     *
+     * @see multiline()
      */
     public function m(): self
     {
@@ -87,11 +78,7 @@ trait HasFlags
     }
 
     /**
-     * Enable single line mode (. matches newlines)
-     *
-     * <code>
-     *      $regine = Regine::make()->anyChar()->oneOrMore()->dotAll(); // /.+/s
-     * </code>
+     * Enables single line (dot all) mode, allowing the dot (`.`) to match newline characters in regex patterns.
      */
     public function dotAll(): self
     {
@@ -99,8 +86,10 @@ trait HasFlags
     }
 
     /**
-     * Alias for dotAll
-     * 
+     * Enables the dot-all (single line) regex flag.
+     *
+     * This is an alias for the dotAll() method.
+     *
      * @see dotAll
      */
     public function s(): self
@@ -109,11 +98,7 @@ trait HasFlags
     }
 
     /**
-     * Enable extended syntax (allows comments and whitespace)
-     *
-     * <code>
-     *      $regine = Regine::make()->literal('test')->extended(); // /test/x
-     * </code>
+     * Enables the extended regex flag, allowing comments and whitespace in the pattern.
      */
     public function extended(): self
     {
@@ -121,8 +106,10 @@ trait HasFlags
     }
 
     /**
-     * Alias for extended
-     * 
+     * Enables the extended regex flag.
+     *
+     * Alias for the `extended()` method.
+     *
      * @see extended
      */
     public function x(): self
@@ -131,11 +118,9 @@ trait HasFlags
     }
 
     /**
-     * Enable unicode mode
+     * Enables the Unicode regex flag.
      *
-     * <code>
-     *      $regine = Regine::make()->literal('тест')->unicode(); // /тест/u
-     * </code>
+     * Allows the regular expression to interpret the pattern and subject as UTF-8, enabling Unicode character matching.
      */
     public function unicode(): self
     {
@@ -143,9 +128,11 @@ trait HasFlags
     }
 
     /**
-     * Alias for unicode
-     * 
-     * @see unicode
+     * Enables the Unicode regex flag.
+     *
+     * Alias for the unicode() method.
+     *
+     * @see unicode()
      */
     public function u(): self
     {
@@ -153,25 +140,34 @@ trait HasFlags
     }
 
     /**
-     * Remove a specific flag
+     * Removes the specified regex flag from the current set of flags.
+     *
+     * @param  RegexFlagsEnum  $flag  The flag to remove.
      */
     public function removeFlag(RegexFlagsEnum $flag): self
     {
-        $this->flags = array_filter($this->flags, fn($f) => $f !== $flag);
+        $this->flags = array_filter($this->flags, fn ($f) => $f !== $flag);
+
         return $this;
     }
 
     /**
-     * Clear all flags
+     * Removes all regex flags from the current set.
+     *
+     * @return self The current instance for method chaining.
      */
     public function clearFlags(): self
     {
         $this->flags = [];
+
         return $this;
     }
 
     /**
-     * Check if a specific flag is set
+     * Determines whether a specific regex flag is currently set.
+     *
+     * @param  RegexFlagsEnum  $flag  The flag to check for.
+     * @return bool True if the flag is set; otherwise, false.
      */
     public function hasFlag(RegexFlagsEnum $flag): bool
     {
@@ -179,7 +175,9 @@ trait HasFlags
     }
 
     /**
-     * Get all current flags as string
+     * Returns the current regex flags combined into a single string representation.
+     *
+     * @return string The combined string of all active regex flags.
      */
     public function getFlagsString(): string
     {
@@ -187,9 +185,9 @@ trait HasFlags
     }
 
     /**
-     * Get all current flags as array
+     * Returns the current regex flags as an array of `RegexFlagsEnum` instances.
      *
-     * @return array<RegexFlagsEnum>
+     * @return array<RegexFlagsEnum> The currently set regex flags.
      */
     public function getFlags(): array
     {
@@ -197,11 +195,14 @@ trait HasFlags
     }
 
     /**
-     * Add a flag to the current flags array
+     * Adds a regex flag to the current set if it is not already present.
+     *
+     * @param  RegexFlagsEnum  $flag  The regex flag to add.
+     * @return self Returns the current instance for method chaining.
      */
     private function addFlag(RegexFlagsEnum $flag): self
     {
-        if (!in_array($flag, $this->flags, true)) {
+        if (! in_array($flag, $this->flags, true)) {
             $this->flags[] = $flag;
         }
 

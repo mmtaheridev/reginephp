@@ -10,7 +10,7 @@ use Regine\Regine;
 
 /**
  * Alternation component
- * 
+ *
  * Implements a regex component that represents an alternation (OR)
  * between multiple alternatives
  */
@@ -20,9 +20,11 @@ class AlternationComponent implements RegexComponent
     private array $alternatives;
 
     /**
-     * Create an alternation component
+     * Initializes an alternation component with one or more alternatives.
      *
-     * @param  array<Regine|string>  $alternatives
+     * @param  array<Regine|string>  $alternatives  An array of alternatives, each as a Regine object or string.
+     *
+     * @throws InvalidArgumentException If no alternatives are provided.
      */
     public function __construct(array $alternatives)
     {
@@ -37,7 +39,10 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Create alternation with single alternative
+     * Creates an alternation component with a single alternative.
+     *
+     * @param  Regine|string  $alternative  The alternative to include in the alternation.
+     * @return self The created AlternationComponent instance.
      */
     public static function single(Regine|string $alternative): self
     {
@@ -45,9 +50,10 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Create alternation with multiple alternatives
+     * Creates an alternation component from multiple alternatives.
      *
-     * @param  array<Regine|string>  $alternatives
+     * @param  array<Regine|string>  $alternatives  The alternatives to include in the alternation.
+     * @return self The constructed alternation component.
      */
     public static function multiple(array $alternatives): self
     {
@@ -55,7 +61,9 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Compile the alternation component into a regex string
+     * Compiles the alternation component into a regex pattern string by joining all alternatives with the pipe (`|`) character.
+     *
+     * @return string The compiled regex alternation pattern.
      */
     public function compile(): string
     {
@@ -63,7 +71,9 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Get the type of the alternation component
+     * Returns the type identifier for this component.
+     *
+     * @return string The string 'alternation'.
      */
     public function getType(): string
     {
@@ -71,9 +81,11 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Get metadata about the alternation component
+     * Returns metadata describing the alternation component.
      *
-     * @return array<string, mixed>
+     * The metadata includes the component type, the list of compiled alternatives, and the total number of alternatives.
+     *
+     * @return array<string, mixed> Associative array with keys 'type', 'alternatives', and 'count'.
      */
     public function getMetadata(): array
     {
@@ -85,7 +97,9 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Check if the alternation component can be quantified
+     * Indicates that the alternation component supports quantifiers.
+     *
+     * @return bool Always returns true.
      */
     public function canBeQuantified(): bool
     {
@@ -93,7 +107,9 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Get a human-readable description of the alternation component
+     * Returns a human-readable description of the alternation, listing all alternatives and their count.
+     *
+     * @return string A description indicating the alternatives and their total number.
      */
     public function getDescription(): string
     {
@@ -104,7 +120,12 @@ class AlternationComponent implements RegexComponent
     }
 
     /**
-     * Compile a pattern (Regine object or string) to its string representation
+     * Converts a Regine object or string pattern to its string representation.
+     *
+     * If the pattern is a Regine object, its raw compiled string is returned; otherwise, the string is returned as-is.
+     *
+     * @param  Regine|string  $pattern  The pattern to convert.
+     * @return string The string representation of the pattern.
      */
     private function compilePattern(Regine|string $pattern): string
     {

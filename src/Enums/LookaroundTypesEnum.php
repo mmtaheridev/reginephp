@@ -12,7 +12,10 @@ enum LookaroundTypesEnum: string
     case NEGATIVE_LOOKBEHIND = 'negative_lookbehind';
 
     /**
-     * Get the regex pattern for the lookaround type
+     * Returns the regex lookaround pattern for this type, embedding the given content.
+     *
+     * @param  string  $content  The regex content to include within the lookaround assertion.
+     * @return string The complete regex lookaround pattern for this enum case.
      */
     public function getPattern(string $content): string
     {
@@ -25,7 +28,9 @@ enum LookaroundTypesEnum: string
     }
 
     /**
-     * Get a human-readable description of the lookaround type
+     * Returns a human-readable description of the lookaround type represented by this enum instance.
+     *
+     * @return string The description of the lookaround type.
      */
     public function getDescription(): string
     {
@@ -38,7 +43,9 @@ enum LookaroundTypesEnum: string
     }
 
     /**
-     * Get the prefix for the lookaround type
+     * Returns the regex prefix corresponding to the lookaround type.
+     *
+     * @return string The prefix used to start the regex lookaround assertion for this enum case.
      */
     public function getPrefix(): string
     {
@@ -49,4 +56,4 @@ enum LookaroundTypesEnum: string
             self::NEGATIVE_LOOKBEHIND => '(?<!',
         };
     }
-} 
+}

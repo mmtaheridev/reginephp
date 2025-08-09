@@ -10,17 +10,11 @@ use Regine\Regine;
 trait HasLookarounds
 {
     /**
-     * Add a positive lookahead assertion
+     * Adds a positive lookahead assertion to the regex pattern.
      *
-     * Matches if the pattern appears ahead of the current position,
-     * but does not consume the characters.
+     * The resulting pattern matches if the specified pattern appears ahead of the current position, without consuming any characters. Enables chaining for building complex regular expressions.
      *
-     * <code>
-     *      $regine = Regine::make()->literal('foo')->lookahead('bar'); // foo(?=bar)
-     *      $regine = Regine::make()->lookahead(Regine::make()->digit()->oneOrMore()); // (?=\d+)
-     * </code>
-     *
-     * @param  Regine|string  $pattern  The pattern to look ahead for
+     * @param  Regine|string  $pattern  The pattern to assert must appear ahead.
      */
     public function lookahead(Regine|string $pattern): self
     {
@@ -31,17 +25,11 @@ trait HasLookarounds
     }
 
     /**
-     * Add a negative lookahead assertion
+     * Adds a negative lookahead assertion to the regex pattern.
      *
-     * Matches if the pattern does NOT appear ahead of the current position,
-     * but does not consume the characters.
+     * The resulting pattern matches if the specified pattern does not appear ahead of the current position, without consuming any characters. Enables chaining for building complex regular expressions.
      *
-     * <code>
-     *      $regine = Regine::make()->literal('foo')->negativeLookahead('bar'); // foo(?!bar)
-     *      $regine = Regine::make()->negativeLookahead(Regine::make()->digit()->oneOrMore()); // (?!\d+)
-     * </code>
-     *
-     * @param  Regine|string  $pattern  The pattern to look ahead for (negative)
+     * @param  Regine|string  $pattern  The pattern that must not appear ahead of the current position.
      */
     public function negativeLookahead(Regine|string $pattern): self
     {
@@ -52,17 +40,11 @@ trait HasLookarounds
     }
 
     /**
-     * Add a positive lookbehind assertion
+     * Adds a positive lookbehind assertion to the regex pattern.
      *
-     * Matches if the pattern appears behind the current position,
-     * but does not consume the characters.
+     * The resulting pattern matches if the specified pattern appears immediately before the current position, without consuming any characters.
      *
-     * <code>
-     *      $regine = Regine::make()->lookbehind('foo')->literal('bar'); // (?<=foo)bar
-     *      $regine = Regine::make()->lookbehind(Regine::make()->digit()->oneOrMore()); // (?<=\d+)
-     * </code>
-     *
-     * @param  Regine|string  $pattern  The pattern to look behind for
+     * @param  Regine|string  $pattern  The pattern to assert behind the current position.
      */
     public function lookbehind(Regine|string $pattern): self
     {
@@ -73,17 +55,11 @@ trait HasLookarounds
     }
 
     /**
-     * Add a negative lookbehind assertion
+     * Adds a negative lookbehind assertion to the regex pattern.
      *
-     * Matches if the pattern does NOT appear behind the current position,
-     * but does not consume the characters.
+     * The resulting pattern matches only if the specified pattern does not appear immediately before the current position, without consuming any characters.
      *
-     * <code>
-     *      $regine = Regine::make()->negativeLookbehind('foo')->literal('bar'); // (?<!foo)bar
-     *      $regine = Regine::make()->negativeLookbehind(Regine::make()->digit()->oneOrMore()); // (?<!\d+)
-     * </code>
-     *
-     * @param  Regine|string  $pattern  The pattern to look behind for (negative)
+     * @param  Regine|string  $pattern  The pattern that must not appear behind the current position.
      */
     public function negativeLookbehind(Regine|string $pattern): self
     {
@@ -92,4 +68,4 @@ trait HasLookarounds
 
         return $this;
     }
-} 
+}

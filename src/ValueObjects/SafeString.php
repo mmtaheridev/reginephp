@@ -10,7 +10,9 @@ readonly class SafeString
     private array $characters;
 
     /**
-     * @param  SafeCharacter[]  $characters
+     * Initializes a SafeString with an array of SafeCharacter objects.
+     *
+     * @param  SafeCharacter[]  $characters  Array of SafeCharacter instances to compose the SafeString.
      */
     private function __construct(array $characters)
     {
@@ -18,7 +20,12 @@ readonly class SafeString
     }
 
     /**
-     * Create a SafeString from a raw string
+     * Creates a SafeString instance from a raw string by converting each character to a SafeCharacter.
+     *
+     * Returns an empty SafeString if the input string is empty.
+     *
+     * @param  string  $text  The raw string to convert.
+     * @return self The resulting SafeString instance.
      */
     public static function from(string $text): self
     {
@@ -37,9 +44,10 @@ readonly class SafeString
     }
 
     /**
-     * Create a SafeString from an array of SafeCharacter objects
+     * Creates a SafeString from an array of SafeCharacter objects.
      *
-     * @param  array<SafeCharacter>  $characters
+     * @param  array<SafeCharacter>  $characters  The array of SafeCharacter instances to compose the SafeString.
+     * @return self A new SafeString instance containing the provided characters.
      */
     public static function fromSafeCharacters(array $characters): self
     {
@@ -47,7 +55,9 @@ readonly class SafeString
     }
 
     /**
-     * Get the raw string value
+     * Returns the raw string composed of all characters in the SafeString.
+     *
+     * @return string The concatenated raw string value.
      */
     public function getRaw(): string
     {
@@ -55,7 +65,11 @@ readonly class SafeString
     }
 
     /**
-     * Get the escaped version for regex compilation
+     * Returns the string with all characters escaped for use in regular expression patterns.
+     *
+     * Each character is escaped according to its regex requirements, making the result safe for direct inclusion in regex patterns.
+     *
+     * @return string The escaped string suitable for regex compilation.
      */
     public function escaped(): string
     {
@@ -63,7 +77,11 @@ readonly class SafeString
     }
 
     /**
-     * Get the escaped version for character class compilation
+     * Returns the string with all characters escaped for use in a regex character class.
+     *
+     * Each character is escaped using its `escapedForCharacterClass()` method to ensure safe inclusion in a regular expression character class.
+     *
+     * @return string The escaped string suitable for regex character class compilation.
      */
     public function escapedForCharacterClass(): string
     {
@@ -71,7 +89,9 @@ readonly class SafeString
     }
 
     /**
-     * Check if the string contains any special characters
+     * Determines whether the string contains any special characters.
+     *
+     * @return bool True if at least one character is special; otherwise, false.
      */
     public function hasSpecialCharacters(): bool
     {
@@ -85,9 +105,9 @@ readonly class SafeString
     }
 
     /**
-     * Get all special characters in the string
+     * Returns an array of all special characters contained in the string.
      *
-     * @return array<SafeCharacter>
+     * @return array<SafeCharacter> The special characters present in the string.
      */
     public function getSpecialCharacters(): array
     {
@@ -95,9 +115,9 @@ readonly class SafeString
     }
 
     /**
-     * Get the characters array
+     * Returns the array of `SafeCharacter` objects that make up this `SafeString`.
      *
-     * @return array<SafeCharacter>
+     * @return array<SafeCharacter> The internal array of `SafeCharacter` instances.
      */
     public function getCharacters(): array
     {
@@ -105,7 +125,9 @@ readonly class SafeString
     }
 
     /**
-     * Check if the string is empty
+     * Determines whether the SafeString contains no characters.
+     *
+     * @return bool True if the SafeString is empty; otherwise, false.
      */
     public function isEmpty(): bool
     {
@@ -113,7 +135,9 @@ readonly class SafeString
     }
 
     /**
-     * Get the length of the string
+     * Returns the number of characters in the SafeString.
+     *
+     * @return int The length of the SafeString.
      */
     public function length(): int
     {
@@ -121,7 +145,9 @@ readonly class SafeString
     }
 
     /**
-     * String representation returns the raw string
+     * Returns the raw string representation of the SafeString.
+     *
+     * @return string The concatenated raw string value.
      */
     public function __toString(): string
     {

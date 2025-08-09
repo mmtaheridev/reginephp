@@ -12,7 +12,7 @@ use Regine\ValueObjects\SafeString;
 
 /**
  * Character class component
- * 
+ *
  * Implements a regex component that represents a character class
  * (any of, none of, range)
  */
@@ -24,6 +24,15 @@ class CharacterClassComponent implements RegexComponent
     private bool $negated;
     private CharacterClassTypesEnum $classType;
 
+    /**
+     * Initializes a new character class component with the specified characters, negation flag, and class type.
+     *
+     * @param  string  $chars  The characters to include in the character class.
+     * @param  bool  $negated  Whether the character class is negated.
+     * @param  CharacterClassTypesEnum  $type  The type of character class (e.g., any of, none of, range).
+     *
+     * @throws InvalidArgumentException If the character string is empty.
+     */
     public function __construct(string $chars, bool $negated, CharacterClassTypesEnum $type)
     {
         if ($chars === '') {
@@ -35,7 +44,10 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Create a character class component for `any of` a set of characters
+     * Creates a character class component that matches any of the specified characters.
+     *
+     * @param  string  $chars  The set of characters to include in the character class.
+     * @return self A new CharacterClassComponent representing the specified character set.
      */
     public static function anyOf(string $chars): self
     {
@@ -43,7 +55,10 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Create a character class component for `none of` a set of characters
+     * Creates a character class component that matches none of the specified characters.
+     *
+     * @param  string  $chars  The characters to exclude from the match.
+     * @return self The constructed character class component.
      */
     public static function noneOf(string $chars): self
     {
@@ -51,7 +66,13 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Create a character class component for a range of characters
+     * Creates a character class component representing a range from one character to another.
+     *
+     * @param  string  $from  The starting character of the range.
+     * @param  string  $to  The ending character of the range.
+     * @return self The character class component for the specified range.
+     *
+     * @throws InvalidArgumentException If either boundary is not a single character or if the start is greater than the end.
      */
     public static function range(string $from, string $to): self
     {
@@ -66,7 +87,11 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Compile the character class component into a regex string
+     * Compiles the character class component into a regex character class string.
+     *
+     * Handles negation and character ranges, escaping characters as needed for safe inclusion in a regex pattern.
+     *
+     * @return string The compiled regex character class.
      */
     public function compile(): string
     {
@@ -100,7 +125,9 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Get the type of the character class component
+     * Returns the type identifier for the character class component.
+     *
+     * @return string The static type string 'CHARACTER_CLASS'.
      */
     public function getType(): string
     {
@@ -108,9 +135,9 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Get metadata about the character class component
+     * Returns metadata describing the character class component, including type, raw characters, negation status, class type, and special character details.
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> Associative array with keys: 'type', 'chars', 'negated', 'classType', 'hasSpecialCharacters', and 'specialCharacters'.
      */
     public function getMetadata(): array
     {
@@ -128,7 +155,9 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Check if the character class component can be quantified
+     * Determines whether the character class component supports quantifiers.
+     *
+     * @return bool Always returns true, as character classes can be quantified in regular expressions.
      */
     public function canBeQuantified(): bool
     {
@@ -136,7 +165,11 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Get a human-readable description of the character class component
+     * Returns a human-readable description of the character class, indicating its type and included or excluded characters.
+     *
+     * For range types, describes the character range boundaries. For other types, specifies whether the class matches any or none of the given characters.
+     *
+     * @return string The description of the character class.
      */
     public function getDescription(): string
     {

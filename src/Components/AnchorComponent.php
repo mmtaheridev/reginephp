@@ -9,17 +9,18 @@ use Regine\Enums\AnchorTypesEnum;
 
 /**
  * Anchor component
- * 
+ *
  * Implements a regex component that represents an anchor
  * (start of string, end of string, start of line, end of line, word boundary, non-word boundary)
- * 
  */
 class AnchorComponent implements RegexComponent
 {
     private AnchorTypesEnum $anchorType;
 
-    /**
-     * Create an anchor component
+    /****
+     * Initializes the AnchorComponent with a specific anchor type.
+     *
+     * @param AnchorTypesEnum $anchorType The anchor type to represent.
      */
     public function __construct(AnchorTypesEnum $anchorType)
     {
@@ -27,7 +28,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Create a start of string anchor (^)
+     * Creates an AnchorComponent representing the start of a string anchor (`^`).
+     *
+     * @return self Instance configured for the start of string anchor.
      */
     public static function startOfString(): self
     {
@@ -35,7 +38,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Create an end of string anchor ($)
+     * Creates an anchor component representing the end of a string (`$`).
+     *
+     * @return self An instance configured for the end of string anchor.
      */
     public static function endOfString(): self
     {
@@ -43,7 +48,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Create a start of line anchor (^)
+     * Creates an AnchorComponent representing the start of a line anchor (`^`).
+     *
+     * @return self Instance configured for the start of line anchor.
      */
     public static function startOfLine(): self
     {
@@ -51,7 +58,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Create an end of line anchor ($)
+     * Creates an instance representing the end of line anchor (`$`).
+     *
+     * @return self AnchorComponent instance for the end of line anchor.
      */
     public static function endOfLine(): self
     {
@@ -59,7 +68,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Create a word boundary anchor (\b)
+     * Creates an AnchorComponent representing a word boundary anchor (`\b`).
+     *
+     * @return self Instance configured for the word boundary anchor.
      */
     public static function wordBoundary(): self
     {
@@ -67,7 +78,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Create a non-word boundary anchor (\B)
+     * Creates an AnchorComponent representing a non-word boundary anchor (`\B`).
+     *
+     * @return self Instance representing the non-word boundary anchor.
      */
     public static function nonWordBoundary(): self
     {
@@ -75,7 +88,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Compile the anchor component into a regex string
+     * Returns the regex string representation of the anchor type.
+     *
+     * @return string The regex pattern for the specified anchor.
      */
     public function compile(): string
     {
@@ -83,7 +98,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Get the type of the anchor component
+     * Returns the string value representing the type of the anchor.
+     *
+     * @return string The anchor type as a string.
      */
     public function getType(): string
     {
@@ -91,9 +108,11 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Get metadata about the anchor component
+     * Returns metadata describing the anchor component.
      *
-     * @return array<string, mixed>
+     * The returned array includes the anchor type, its regex representation, and the enum name.
+     *
+     * @return array<string, mixed> Associative array with keys 'type', 'anchor', and 'enum'.
      */
     public function getMetadata(): array
     {
@@ -105,7 +124,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Check if the anchor component can be quantified
+     * Determines whether the anchor component can be quantified in a regex pattern.
+     *
+     * @return bool Always returns false, as regex anchors cannot be quantified.
      */
     public function canBeQuantified(): bool
     {
@@ -113,7 +134,9 @@ class AnchorComponent implements RegexComponent
     }
 
     /**
-     * Get a human-readable description of the anchor component
+     * Returns a human-readable description of the anchor type represented by this component.
+     *
+     * @return string The description of the anchor type.
      */
     public function getDescription(): string
     {

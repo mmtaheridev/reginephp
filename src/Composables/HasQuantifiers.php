@@ -74,7 +74,16 @@ trait HasQuantifiers
     }
 
     /**
-     * Add a quantifier to the last component
+     * Adds a quantifier to the last regex component in the pattern.
+     *
+     * If the last component is an alternation, it is first wrapped in a non-capturing group before applying the quantifier.
+     * Throws an InvalidArgumentException if there is no preceding element or if the last component cannot be quantified.
+     * Throws a RuntimeException if an expected alternation component is missing.
+     *
+     * @param  QuantifierComponent  $quantifier  The quantifier to apply to the last component.
+     *
+     * @throws InvalidArgumentException If there is no preceding element or the last component cannot be quantified.
+     * @throws RuntimeException If an expected alternation component is missing.
      */
     private function addQuantifier(QuantifierComponent $quantifier): void
     {

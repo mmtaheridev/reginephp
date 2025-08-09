@@ -14,7 +14,9 @@ enum QuantifierTypesEnum: string
     case BETWEEN = 'between';
 
     /**
-     * Get the base description for the quantifier type
+     * Returns a human-readable description of the quantifier type, with placeholders for required parameters.
+     *
+     * @return string The description of the quantifier, using placeholders such as {count}, {min}, or {max} where applicable.
      */
     public function getBaseDescription(): string
     {
@@ -29,9 +31,10 @@ enum QuantifierTypesEnum: string
     }
 
     /**
-     * Get the regex string for the quantifier type
+     * Returns the regex quantifier string corresponding to the enum case.
      *
-     * @param array<string, int> $params
+     * @param  array<string, int>  $params  Optional parameters for quantifiers that require counts, such as 'count', 'min', or 'max'.
+     * @return string The regex quantifier string for this quantifier type.
      */
     public function getRegex(array $params = []): string
     {

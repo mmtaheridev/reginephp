@@ -16,7 +16,9 @@ enum ShorthandTypesEnum: string
     case LETTER = 'letter';
 
     /**
-     * Get the regex string for the shorthand type
+     * Returns the regex pattern string corresponding to the shorthand type.
+     *
+     * @return string The regex pattern for this shorthand type.
      */
     public function getRegex(): string
     {
@@ -33,7 +35,9 @@ enum ShorthandTypesEnum: string
     }
 
     /**
-     * Get the description for the shorthand type
+     * Returns a human-readable description of what the shorthand regex type matches.
+     *
+     * @return string The description of the regex shorthand type.
      */
     public function getDescription(): string
     {
