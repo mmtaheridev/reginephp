@@ -32,7 +32,7 @@ readonly class SafeCharacter
      */
     public static function from(string $char): self
     {
-        if (strlen($char) !== 1) {
+        if (mb_strlen($char, 'UTF-8') !== 1) {
             throw new InvalidArgumentException('SafeCharacter can only wrap single characters');
         }
 

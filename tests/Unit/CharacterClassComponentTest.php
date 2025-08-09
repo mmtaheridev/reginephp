@@ -71,6 +71,15 @@ describe('Character Class Error Handling', function () {
     it('throws for invalid range order', function () {
         Regine::make()->range('z', 'a');
     })->throws(InvalidArgumentException::class, 'Range start must be less than or equal to range end.');
+
+    it('throws for invalid multibyte boundary length', function () {
+        // two greek letters -> length 2
+        Regine::make()->range('αβ', 'γ');
+    })->throws(InvalidArgumentException::class, 'Range boundaries must be single characters.');
+
+    it('throws for invalid emoji range order', function () {
+        Regine::make()->range('😇', '😀');
+    })->throws(InvalidArgumentException::class, 'Range start must be less than or equal to range end.');
 });
 
 // Range tests
@@ -95,11 +104,27 @@ describe('Character Ranges', function () {
         expect($regex)->toBe('/[!-~]/');
     });
 
+    it('creates unicode range with multibyte characters', function () {
+        $regex = Regine::make()->range('α', 'γ')->compile();
+        expect($regex)->toBe('/[α-γ]/');
+    });
+
+    it('creates emoji range with correct ordering', function () {
+        $regex = Regine::make()->range('😀', '😇')->compile();
+        expect($regex)->toBe('/[😀-😇]/');
+    });
+
     it('parses range when internal string has variable length parts', function () {
         // Directly construct to simulate future format changes ("ab-cd")
         $component = new CharacterClassComponent('ab-cd', false, CharacterClassTypesEnum::RANGE);
         expect($component->compile())->toBe('[a-d]');
         expect($component->getDescription())->toBe("Character range: from 'a' to 'd'");
+    });
+
+    it('parses multibyte range when internal string has variable length parts', function () {
+        $component = new CharacterClassComponent('αβ-γδ', false, CharacterClassTypesEnum::RANGE);
+        expect($component->compile())->toBe('[α-δ]');
+        expect($component->getDescription())->toBe("Character range: from 'α' to 'δ'");
     });
 
     it('falls back to escaping when range format is unexpected (no dash)', function () {

@@ -76,10 +76,20 @@ class CharacterClassComponent implements RegexComponent
      */
     public static function range(string $from, string $to): self
     {
-        if (strlen($from) !== 1 || strlen($to) !== 1) {
+        // Validate single-character boundaries using multibyte length
+        if (mb_strlen($from, 'UTF-8') !== 1 || mb_strlen($to, 'UTF-8') !== 1) {
             throw new InvalidArgumentException('Range boundaries must be single characters.');
         }
-        if ($from > $to) {
+
+        // Compare using Unicode code points for proper ordering
+        $fromCodePoint = mb_ord($from, 'UTF-8');
+        $toCodePoint = mb_ord($to, 'UTF-8');
+
+        if ($fromCodePoint === false || $toCodePoint === false) {
+            throw new InvalidArgumentException('Range boundaries must be valid UTF-8 characters.');
+        }
+
+        if ($fromCodePoint > $toCodePoint) {
             throw new InvalidArgumentException('Range start must be less than or equal to range end.');
         }
 
@@ -167,12 +177,12 @@ class CharacterClassComponent implements RegexComponent
         if ($this->classType === CharacterClassTypesEnum::RANGE) {
             $rawChars = $this->chars->getRaw();
 
-            // Split on the first dash and safely extract endpoints
+            // Split on the first dash and safely extract endpoints (multibyte-aware)
             $parts = explode('-', $rawChars, 2);
             if (count($parts) === 2 && $parts[0] !== '' && $parts[1] !== '') {
-                $from = $parts[0][0];
-                $rightLen = strlen($parts[1]);
-                $to = $parts[1][$rightLen - 1];
+                $from = mb_substr($parts[0], 0, 1, 'UTF-8');
+                $rightLen = mb_strlen($parts[1], 'UTF-8');
+                $to = mb_substr($parts[1], $rightLen - 1, 1, 'UTF-8');
 
                 return "Character range: from '{$from}' to '{$to}'";
             }
@@ -193,14 +203,14 @@ class CharacterClassComponent implements RegexComponent
         // Extract the range components
         $rawChars = $this->chars->getRaw();
 
-        // Split on the first dash to safely extract start and end parts
+        // Split on the first dash to safely extract start and end parts (multibyte-aware)
         $parts = explode('-', $rawChars, 2);
 
         if (count($parts) === 2 && $parts[0] !== '' && $parts[1] !== '') {
             // Take the first character of the left part and the last character of the right part
-            $fromChar = $parts[0][0];
-            $rightLen = strlen($parts[1]);
-            $toChar = $parts[1][$rightLen - 1];
+            $fromChar = mb_substr($parts[0], 0, 1, 'UTF-8');
+            $rightLen = mb_strlen($parts[1], 'UTF-8');
+            $toChar = mb_substr($parts[1], $rightLen - 1, 1, 'UTF-8');
 
             $fromSafe = SafeString::from($fromChar);
             $toSafe = SafeString::from($toChar);

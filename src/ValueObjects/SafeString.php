@@ -29,15 +29,15 @@ readonly class SafeString
      */
     public static function from(string $text): self
     {
-        if (strlen($text) === 0) {
+        if (mb_strlen($text, 'UTF-8') === 0) {
             return new self([]);
         }
 
         $characters = [];
-        $length = strlen($text);
+        $length = mb_strlen($text, 'UTF-8');
 
         for ($i = 0; $i < $length; $i++) {
-            $characters[] = SafeCharacter::from($text[$i]);
+            $characters[] = SafeCharacter::from(mb_substr($text, $i, 1, 'UTF-8'));
         }
 
         return new self($characters);
