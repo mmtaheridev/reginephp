@@ -90,6 +90,10 @@ class CharacterClassComponent implements RegexComponent
      * Compiles the character class component into a regex character class string.
      *
      * Handles negation and character ranges, escaping characters as needed for safe inclusion in a regex pattern.
+     * For ranges, the internal raw string is split on the first dash ("-") to extract the two sides safely.
+     * For variable-length parts (e.g., "ab-cd"), it uses the first character of the left part ("a") and the
+     * last character of the right part ("d") as the actual range endpoints, escaping each endpoint individually.
+     * If the format is unexpected (no dash or missing endpoints), it falls back to normal character-class escaping.
      *
      * @return string The compiled regex character class.
      */
@@ -99,23 +103,7 @@ class CharacterClassComponent implements RegexComponent
 
         // For ranges, handle the dash specially - it should not be escaped as it's the range operator
         if ($this->classType === CharacterClassTypesEnum::RANGE) {
-            // Extract the range components
-            $rawChars = $this->chars->getRaw();
-
-            // For ranges, we know the format is "from-to", so take first and last character
-            // with the dash in between
-            if (strlen($rawChars) >= 3) {
-                $from = $rawChars[0];
-                $to = $rawChars[2];
-
-                // Create safe characters for from and to, then escape them individually
-                $fromSafe = SafeString::from($from);
-                $toSafe = SafeString::from($to);
-                $escapedChars = $fromSafe->escapedForCharacterClass() . '-' . $toSafe->escapedForCharacterClass();
-            } else {
-                // Fallback to regular escaping if format is unexpected
-                $escapedChars = $this->chars->escapedForCharacterClass();
-            }
+            $escapedChars = $this->handleRangeCharacterClass();
         } else {
             // For non-range character classes, use regular escaping
             $escapedChars = $this->chars->escapedForCharacterClass();
@@ -167,7 +155,10 @@ class CharacterClassComponent implements RegexComponent
     /**
      * Returns a human-readable description of the character class, indicating its type and included or excluded characters.
      *
-     * For range types, describes the character range boundaries. For other types, specifies whether the class matches any or none of the given characters.
+     * For range types, describes the character range boundaries. Internally, the raw string is split on the first dash;
+     * for variable-length parts (e.g., "ab-cd"), the description reflects the first character of the left part and the
+     * last character of the right part ("a" to "d"). For other types, specifies whether the class matches any or none
+     * of the given characters.
      *
      * @return string The description of the character class.
      */
@@ -176,9 +167,12 @@ class CharacterClassComponent implements RegexComponent
         if ($this->classType === CharacterClassTypesEnum::RANGE) {
             $rawChars = $this->chars->getRaw();
 
-            if (strlen($rawChars) >= 3) {
-                $from = $rawChars[0];
-                $to = $rawChars[2];
+            // Split on the first dash and safely extract endpoints
+            $parts = explode('-', $rawChars, 2);
+            if (count($parts) === 2 && $parts[0] !== '' && $parts[1] !== '') {
+                $from = $parts[0][0];
+                $rightLen = strlen($parts[1]);
+                $to = $parts[1][$rightLen - 1];
 
                 return "Character range: from '{$from}' to '{$to}'";
             }
@@ -187,5 +181,35 @@ class CharacterClassComponent implements RegexComponent
         $action = $this->negated ? 'none of' : 'any of';
 
         return "Character class: {$action} '{$this->chars->getRaw()}'";
+    }
+
+    /**
+     * Handles the range character class
+     *
+     * @return string The escaped characters for the range.
+     */
+    protected function handleRangeCharacterClass(): string
+    {
+        // Extract the range components
+        $rawChars = $this->chars->getRaw();
+
+        // Split on the first dash to safely extract start and end parts
+        $parts = explode('-', $rawChars, 2);
+
+        if (count($parts) === 2 && $parts[0] !== '' && $parts[1] !== '') {
+            // Take the first character of the left part and the last character of the right part
+            $fromChar = $parts[0][0];
+            $rightLen = strlen($parts[1]);
+            $toChar = $parts[1][$rightLen - 1];
+
+            $fromSafe = SafeString::from($fromChar);
+            $toSafe = SafeString::from($toChar);
+            $escapedChars = $fromSafe->escapedForCharacterClass() . '-' . $toSafe->escapedForCharacterClass();
+        } else {
+            // Fallback to regular escaping if format is unexpected
+            $escapedChars = $this->chars->escapedForCharacterClass();
+        }
+
+        return $escapedChars;
     }
 }

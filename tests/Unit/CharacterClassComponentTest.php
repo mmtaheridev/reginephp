@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Regine\Components\CharacterClassComponent;
+use Regine\Enums\CharacterClassTypesEnum;
 use Regine\Regine;
 
 // Basic character class tests
@@ -91,6 +93,25 @@ describe('Character Ranges', function () {
     it('validates range with special ASCII characters', function () {
         $regex = Regine::make()->range('!', '~')->compile();
         expect($regex)->toBe('/[!-~]/');
+    });
+
+    it('parses range when internal string has variable length parts', function () {
+        // Directly construct to simulate future format changes ("ab-cd")
+        $component = new CharacterClassComponent('ab-cd', false, CharacterClassTypesEnum::RANGE);
+        expect($component->compile())->toBe('[a-d]');
+        expect($component->getDescription())->toBe("Character range: from 'a' to 'd'");
+    });
+
+    it('falls back to escaping when range format is unexpected (no dash)', function () {
+        $component = new CharacterClassComponent('abc', false, CharacterClassTypesEnum::RANGE);
+        expect($component->compile())->toBe('[abc]');
+    });
+
+    it('falls back to escaping when range format has missing endpoints', function () {
+        $component1 = new CharacterClassComponent('a-', false, CharacterClassTypesEnum::RANGE);
+        $component2 = new CharacterClassComponent('-a', false, CharacterClassTypesEnum::RANGE);
+        expect($component1->compile())->toBe('[a\-]');
+        expect($component2->compile())->toBe('[\-a]');
     });
 });
 
