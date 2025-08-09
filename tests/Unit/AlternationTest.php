@@ -286,9 +286,9 @@ describe('Component Metadata and Introspection', function () {
         $regine = Regine::make()->orAny(['test', 'other']);
         $debug = $regine->debug();
 
-        expect($debug['pattern'])->toBe('test|other');
-        expect($debug['compiled'])->toBe('/test|other/');
-        expect($debug['component_count'])->toBe(1);
+        expect($debug->pattern())->toBe('test|other');
+        expect($debug->compiled())->toBe('/test|other/');
+        expect($debug->componentCount())->toBe(1);
     });
 });
 

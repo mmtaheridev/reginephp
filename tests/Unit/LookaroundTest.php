@@ -298,9 +298,9 @@ describe('Component Metadata and Introspection', function () {
         $regine = Regine::make()->lookbehind('pre')->literal('test');
         $debug = $regine->debug();
 
-        expect($debug['pattern'])->toBe('(?<=pre)test');
-        expect($debug['compiled'])->toBe('/(?<=pre)test/');
-        expect($debug['component_count'])->toBe(2);
+        expect($debug->pattern())->toBe('(?<=pre)test');
+        expect($debug->compiled())->toBe('/(?<=pre)test/');
+        expect($debug->componentCount())->toBe(2);
     });
 
     it('handles complex patterns in metadata', function () {
@@ -385,4 +385,4 @@ describe('Error Handling', function () {
         $regex = Regine::make()->lookahead($nested)->compile();
         expect($regex)->toBe('/(?=(test)foo|bar\d+)/');
     });
-}); 
+});

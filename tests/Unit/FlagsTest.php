@@ -141,24 +141,24 @@ describe('Flag Combinations', function () {
 describe('Flag Management', function () {
     it('checks if flag is set', function () {
         $regine = Regine::make()->literal('test')->caseInsensitive();
-        
-        expect($regine->hasFlag(RegexFlagsEnum::CASE_INSENSITIVE))->toBe(true);
-        expect($regine->hasFlag(RegexFlagsEnum::MULTILINE))->toBe(false);
+
+        expect($regine->hasFlag(RegexFlagsEnum::CASE_INSENSITIVE))->toBeTrue()
+            ->and($regine->hasFlag(RegexFlagsEnum::MULTILINE))->toBeFalse();
     });
 
     it('gets flags as string', function () {
         $regine = Regine::make()->literal('test')->caseInsensitive()->multiline();
-        
+
         expect($regine->getFlagsString())->toBe('im');
     });
 
     it('gets flags as array', function () {
         $regine = Regine::make()->literal('test')->caseInsensitive()->multiline();
         $flags = $regine->getFlags();
-        
-        expect($flags)->toHaveCount(2);
-        expect($flags)->toContain(RegexFlagsEnum::CASE_INSENSITIVE);
-        expect($flags)->toContain(RegexFlagsEnum::MULTILINE);
+
+        expect($flags)->toHaveCount(2)
+            ->and($flags)->toContain(RegexFlagsEnum::CASE_INSENSITIVE)
+            ->and($flags)->toContain(RegexFlagsEnum::MULTILINE);
     });
 
     it('removes specific flag', function () {
@@ -193,22 +193,22 @@ describe('Flag Management', function () {
 
 describe('Flag Enum Functionality', function () {
     it('provides correct descriptions', function () {
-        expect(RegexFlagsEnum::CASE_INSENSITIVE->getDescription())->toBe('case insensitive matching');
-        expect(RegexFlagsEnum::MULTILINE->getDescription())->toBe('multiline mode (^ and $ match start/end of lines)');
-        expect(RegexFlagsEnum::SINGLE_LINE->getDescription())->toBe('single line mode (. matches newlines)');
-        expect(RegexFlagsEnum::EXTENDED->getDescription())->toBe('extended syntax (allows comments and whitespace)');
-        expect(RegexFlagsEnum::UNICODE->getDescription())->toBe('unicode mode');
+        expect(RegexFlagsEnum::CASE_INSENSITIVE->getDescription())->toBe('case insensitive matching')
+            ->and(RegexFlagsEnum::MULTILINE->getDescription())->toBe('multiline mode (^ and $ match start/end of lines)')
+            ->and(RegexFlagsEnum::SINGLE_LINE->getDescription())->toBe('single line mode (. matches newlines)')
+            ->and(RegexFlagsEnum::EXTENDED->getDescription())->toBe('extended syntax (allows comments and whitespace)')
+            ->and(RegexFlagsEnum::UNICODE->getDescription())->toBe('unicode mode');
     });
 
     it('gets all available flags', function () {
         $flags = RegexFlagsEnum::getAllFlags();
-        
-        expect($flags)->toHaveCount(5);
-        expect($flags)->toHaveKey('i');
-        expect($flags)->toHaveKey('m');
-        expect($flags)->toHaveKey('s');
-        expect($flags)->toHaveKey('x');
-        expect($flags)->toHaveKey('u');
+
+        expect($flags)->toHaveCount(5)
+            ->and($flags)->toHaveKey('i')
+            ->and($flags)->toHaveKey('m')
+            ->and($flags)->toHaveKey('s')
+            ->and($flags)->toHaveKey('x')
+            ->and($flags)->toHaveKey('u');
     });
 
     it('combines flags correctly', function () {
@@ -218,33 +218,33 @@ describe('Flag Enum Functionality', function () {
             RegexFlagsEnum::SINGLE_LINE,
         ];
         $combined = RegexFlagsEnum::combineFlags($flags);
-        
+
         expect($combined)->toBe('ims');
     });
 
     it('parses flag string correctly', function () {
         $parsed = RegexFlagsEnum::parseFlags('ims');
-        
-        expect($parsed)->toHaveCount(3);
-        expect($parsed)->toContain(RegexFlagsEnum::CASE_INSENSITIVE);
-        expect($parsed)->toContain(RegexFlagsEnum::MULTILINE);
-        expect($parsed)->toContain(RegexFlagsEnum::SINGLE_LINE);
+
+        expect($parsed)->toHaveCount(3)
+            ->and($parsed)->toContain(RegexFlagsEnum::CASE_INSENSITIVE)
+            ->and($parsed)->toContain(RegexFlagsEnum::MULTILINE)
+            ->and($parsed)->toContain(RegexFlagsEnum::SINGLE_LINE);
     });
 
     it('handles invalid flags gracefully', function () {
         $parsed = RegexFlagsEnum::parseFlags('iqz');
-        
-        expect($parsed)->toHaveCount(1);
-        expect($parsed)->toContain(RegexFlagsEnum::CASE_INSENSITIVE);
+
+        expect($parsed)->toHaveCount(1)
+            ->and($parsed)->toContain(RegexFlagsEnum::CASE_INSENSITIVE);
     });
 
     it('removes duplicates when parsing', function () {
         $parsed = RegexFlagsEnum::parseFlags('iims');
-        
-        expect($parsed)->toHaveCount(3);
-        expect($parsed)->toContain(RegexFlagsEnum::CASE_INSENSITIVE);
-        expect($parsed)->toContain(RegexFlagsEnum::MULTILINE);
-        expect($parsed)->toContain(RegexFlagsEnum::SINGLE_LINE);
+
+        expect($parsed)->toHaveCount(3)
+            ->and($parsed)->toContain(RegexFlagsEnum::CASE_INSENSITIVE)
+            ->and($parsed)->toContain(RegexFlagsEnum::MULTILINE)
+            ->and($parsed)->toContain(RegexFlagsEnum::SINGLE_LINE);
     });
 });
 
@@ -383,17 +383,17 @@ describe('Debug and Metadata', function () {
         $regine = Regine::make()->literal('test')->caseInsensitive()->multiline();
         $debug = $regine->debug();
 
-        expect($debug['pattern'])->toBe('test');
-        expect($debug['compiled'])->toBe('/test/im');
-        expect($debug['flags'])->toBe('im');
+        expect($debug->pattern())->toBe('test')
+            ->and($debug->compiled())->toBe('/test/im')
+            ->and($debug->flags())->toBe('im');
     });
 
     it('shows empty flags in debug when no flags set', function () {
         $regine = Regine::make()->literal('test');
         $debug = $regine->debug();
 
-        expect($debug['flags'])->toBe('');
-        expect($debug['compiled'])->toBe('/test/');
+        expect($debug->flags())->toBe('')
+            ->and($debug->compiled())->toBe('/test/');
     });
 });
 
@@ -424,9 +424,9 @@ describe('Pattern Matching with Flags', function () {
     it('matches unicode patterns', function () {
         $regine = Regine::make()->wordChar()->oneOrMore()->unicode();
 
-        expect($regine->test('тест'))->toBe(true);
-        expect($regine->test('العربية'))->toBe(true);
-        expect($regine->test('中文'))->toBe(true);
+        expect($regine->test('тест'))->toBeTrue()
+            ->and($regine->test('العربية'))->toBeTrue()
+            ->and($regine->test('中文'))->toBeTrue();
     });
 
     it('combines multiple flag behaviors', function () {
@@ -437,7 +437,7 @@ describe('Pattern Matching with Flags', function () {
             ->literal('END')
             ->caseInsensitive()
             ->dotAll();
-        
+
         $text = "test\nsome\nlines\nend";
         expect($regine->test($text))->toBe(true);
     });
@@ -461,7 +461,7 @@ describe('Error Handling and Edge Cases', function () {
     it('maintains flag order consistently', function () {
         $regex1 = Regine::make()->literal('test')->withFlags(['sim'])->compile();
         $regex2 = Regine::make()->literal('test')->withFlags(['mis'])->compile();
-        
+
         expect($regex1)->toBe('/test/ims');
         expect($regex2)->toBe('/test/ims');
     });

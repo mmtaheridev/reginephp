@@ -14,6 +14,7 @@ use Regine\Composables\HasLiterals;
 use Regine\Composables\HasLookarounds;
 use Regine\Composables\HasQuantifiers;
 use Regine\Composables\HasShorthands;
+use Regine\ValueObjects\DebugInfo;
 
 class Regine
 {
@@ -29,13 +30,18 @@ class Regine
 
     protected PatternCollection $components;
 
+    /**
+     * Initializes a new Regine instance with an empty pattern component collection.
+     */
     public function __construct()
     {
         $this->components = new PatternCollection;
     }
 
     /**
-     * Create a new Regine instance (Starting to build a pattern)
+     * Creates and returns a new Regine instance for building a regex pattern.
+     *
+     * @return self A new Regine pattern builder instance.
      */
     public static function make(): self
     {
@@ -43,29 +49,25 @@ class Regine
     }
 
     /**
-     * Compile the pattern with delimiters and flags
+     * Compiles the regex pattern with the specified delimiter and appends any set flags.
      *
-     * <code>
-     *      $regine = Regine::make()->literal('test')->caseInsensitive(); // /test/i
-     *      $regine = Regine::make()->literal('test')->withFlags(['i', 'm']); // /test/im
-     * </code>
+     * @param  string  $delimiter  The delimiter to enclose the pattern (default is '/').
+     * @return string The fully compiled regex pattern, including delimiters and flags.
      */
     public function compile(string $delimiter = '/'): string
     {
         $flags = $this->getFlagsString();
+
         return $delimiter . $this->components->compile() . $delimiter . $flags;
     }
 
     /**
-     * Compile the pattern without delimiters (raw pattern)
+     * Compiles and returns the regex pattern as a raw string without delimiters or flags.
      *
-     * This is useful for nesting patterns, Laravel routes, or other contexts
-     * where regex delimiters are not needed.
+     * Useful for embedding the pattern in contexts where delimiters are not required,
+     * such as nested patterns or framework routes.
      *
-     * <code>
-     *      $pattern = Regine::make()->literal('test')->digit()->oneOrMore()->compileRaw(); // test\d+
-     *      Route::get("/{$pattern}", function() { ... }); // Laravel route usage
-     * </code>
+     * @return string The raw compiled regex pattern.
      */
     public function compileRaw(): string
     {
@@ -73,11 +75,11 @@ class Regine
     }
 
     /**
-     * Get the raw pattern without delimiters (raw pattern)
+     * Returns the compiled regex pattern string without delimiters or flags.
      *
-     * alias for compileRaw()
-     * 
-     * @see compileRaw()
+     * This method is an alias for {@see compileRaw()}.
+     *
+     * @return string The raw regex pattern.
      */
     public function raw(): string
     {
@@ -127,31 +129,30 @@ class Regine
     }
 
     /**
-     * Get matches from a subject string
+     * Executes the compiled regex pattern on the given subject and returns all matches.
      *
-     * @return array<string>
+     * @param  string  $subject  The input string to search for matches.
+     * @return array<int|string, string> The array of matches found, including the full match and any capturing groups.
      */
     public function matches(string $subject): array
     {
+        $matches = [];
         preg_match($this->compile(), $subject, $matches);
 
         return $matches;
     }
 
     /**
-     * Debug method to show the pattern structure
+     * Returns diagnostic information about the current regex pattern.
      *
-     * @return array<string, mixed>
+     * Provides a DebugInfo object containing the raw pattern,
+     * compiled pattern with delimiters and flags, human-readable description,
+     * component count, flags string, and metadata for debugging purposes.
+     *
+     * @return DebugInfo DebugInfo value object containing diagnostic details about the regex pattern.
      */
-    public function debug(): array
+    public function debug(): DebugInfo
     {
-        return [
-            'pattern' => $this->components->compile(),
-            'compiled' => $this->compile(),
-            'description' => $this->describe(),
-            'component_count' => $this->getComponentCount(),
-            'flags' => $this->getFlagsString(),
-            'metadata' => $this->getMetadata(),
-        ];
+        return new DebugInfo($this);
     }
 }
