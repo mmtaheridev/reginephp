@@ -201,6 +201,9 @@ class CharacterClassComponent implements RegexComponent
             'chars' => $this->chars->getRaw(),
             'negated' => $this->negated,
             'classType' => $this->classType->value,
+            // Signal up to the builder that this component requires Unicode semantics
+            // when multibyte characters are present (so the 'u' flag can be enforced).
+            'requiresUnicode' => $this->containsMultibyteCharacters(),
             'hasSpecialCharacters' => $this->chars->hasSpecialCharacters(),
             'specialCharacters' => array_map(
                 fn (SafeCharacter $char): string => $char->getRaw(),
@@ -284,5 +287,22 @@ class CharacterClassComponent implements RegexComponent
         }
 
         return $escapedChars;
+    }
+
+    /**
+     * Determines whether the character class contains any multibyte UTF-8 characters.
+     *
+     * Used to signal that Unicode mode ('u' flag) is required for correct semantics.
+     */
+    private function containsMultibyteCharacters(): bool
+    {
+        foreach ($this->chars->getCharacters() as $character) {
+            // If the underlying byte-length is not 1, it's a multibyte character in UTF-8
+            if (strlen($character->getRaw()) !== 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

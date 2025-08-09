@@ -124,23 +124,52 @@ describe('Character Ranges', function () {
 
     it('creates unicode range with multibyte characters', function () {
         $regex = Regine::make()->range('α', 'γ')->compile();
-        expect($regex)->toBe('/[α-γ]/');
+        expect($regex)->toBe('/[α-γ]/u');
     });
 
     it('creates negated unicode noneOfRange with multibyte characters', function () {
         $regex = Regine::make()->noneOfRange('α', 'γ')->compile();
-        expect($regex)->toBe('/[^α-γ]/');
+        expect($regex)->toBe('/[^α-γ]/u');
     });
 
     it('creates emoji range with correct ordering', function () {
         $regex = Regine::make()->range('😀', '😇')->compile();
-        expect($regex)->toBe('/[😀-😇]/');
+        expect($regex)->toBe('/[😀-😇]/u');
     });
 
     it('creates negated emoji noneOfRange with correct ordering', function () {
         $regex = Regine::make()->noneOfRange('😀', '😇')->compile();
-        expect($regex)->toBe('/[^😀-😇]/');
+        expect($regex)->toBe('/[^😀-😇]/u');
     });
+
+    it('handles special-character endpoints in ranges (dash start)', function () {
+        $regex = Regine::make()->range('-', 'a')->compile();
+        // Current behavior escapes the first '-' and treats the second '-' as range operator
+        expect($regex)->toBe('/[\-\-a]/');
+    });
+
+    it('handles special-character endpoints in negated ranges (dash start)', function () {
+        $regex = Regine::make()->noneOfRange('-', 'a')->compile();
+        expect($regex)->toBe('/[^\-\-a]/');
+    });
+
+    it('handles special-character endpoints in ranges (caret start)', function () {
+        $regex = Regine::make()->range('^', 'z')->compile();
+        expect($regex)->toBe('/[\^-z]/');
+    });
+
+    it('handles special-character endpoints in negated ranges (caret start)', function () {
+        $regex = Regine::make()->noneOfRange('^', 'z')->compile();
+        expect($regex)->toBe('/[^\^-z]/');
+    });
+
+    it('handles special-character endpoints in ranges (right bracket end)', function () {
+        Regine::make()->range('a', ']')->compile();
+    })->throws(InvalidArgumentException::class, 'Range start must be less than or equal to range end.');
+
+    it('handles special-character endpoints in negated ranges (right bracket end)', function () {
+        Regine::make()->noneOfRange('a', ']')->compile();
+    })->throws(InvalidArgumentException::class, 'Range start must be less than or equal to range end.');
 
     it('parses range when internal string has variable length parts', function () {
         // Directly construct to simulate future format changes ("ab-cd")
@@ -200,12 +229,12 @@ describe('Character Class Integration', function () {
 describe('Unicode and Special Characters', function () {
     it('handles unicode characters in anyOf', function () {
         $regex = Regine::make()->anyOf('αβγ')->compile();
-        expect($regex)->toBe('/[αβγ]/');
+        expect($regex)->toBe('/[αβγ]/u');
     });
 
     it('handles unicode characters in noneOf', function () {
         $regex = Regine::make()->noneOf('αβγ')->compile();
-        expect($regex)->toBe('/[^αβγ]/');
+        expect($regex)->toBe('/[^αβγ]/u');
     });
 
     it('handles whitespace in character classes', function () {

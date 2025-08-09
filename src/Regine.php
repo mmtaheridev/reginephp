@@ -58,6 +58,9 @@ class Regine
     {
         $flags = $this->getFlagsString();
 
+        // Auto-enforce Unicode flag if any component requires it.
+        $flags = $this->enforeUnicodeAndUpdateFlagsIfRequired();
+
         return $delimiter . $this->components->compile() . $delimiter . $flags;
     }
 
@@ -154,5 +157,27 @@ class Regine
     public function debug(): DebugInfo
     {
         return new DebugInfo($this);
+    }
+
+    /**
+     * Enforces the Unicode flag if required.
+     *
+     * @return string The flags string with the Unicode flag if required.
+     */
+    protected function enforeUnicodeAndUpdateFlagsIfRequired(): string
+    {
+        $flags = $this->getFlagsString();
+        if (
+            // not required or already has the Unicode flag
+            ! $this->components->requiresUnicodeFlag() ||
+            strpos($flags, 'u') !== false
+        ) {
+            return $flags;
+        }
+
+        // required and missing
+        $this->u();
+
+        return $this->getFlagsString(); // return the new flags string
     }
 }

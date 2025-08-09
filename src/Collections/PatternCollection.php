@@ -115,4 +115,21 @@ class PatternCollection
 
         return $metadata;
     }
+
+    /**
+     * Determines whether any component signals that Unicode mode is required.
+     *
+     * Components may expose a 'requiresUnicode' boolean in their metadata.
+     */
+    public function requiresUnicodeFlag(): bool
+    {
+        foreach ($this->components as $component) {
+            $meta = $component->getMetadata();
+            if (($meta['requiresUnicode'] ?? false) === true) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
