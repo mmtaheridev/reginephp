@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Regine\Regine;
+use Regine\Exceptions\Alternation\EmptyAlternationException;
+use Regine\Exceptions\Alternation\AlternationCallbackDoesntReturnRegine;
 
 // Basic alternation tests
 describe('Basic Alternation', function () {
@@ -18,7 +20,7 @@ describe('Basic Alternation', function () {
 
     it('handles empty alternatives array', function () {
         Regine::make()->orAny([]);
-    })->throws(InvalidArgumentException::class, 'Alternation requires at least one alternative.');
+    })->throws(EmptyAlternationException::class);
 });
 
 // Scoped alternation tests
@@ -55,7 +57,7 @@ describe('Scoped Alternation', function () {
         Regine::make()->alternation(function () {
             return 'invalid';
         });
-    })->throws(InvalidArgumentException::class, 'Alternation callback must return a Regine instance.');
+    })->throws(AlternationCallbackDoesntReturnRegine::class);
 });
 
 // Quantifier integration tests

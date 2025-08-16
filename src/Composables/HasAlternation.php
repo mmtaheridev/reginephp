@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Regine\Composables;
 
-use InvalidArgumentException;
 use Regine\Collections\PatternCollection;
 use Regine\Components\AlternationComponent;
 use Regine\Components\GroupComponent;
 use Regine\Enums\GroupTypesEnum;
+use Regine\Exceptions\Alternation\AlternationCallbackDoesntReturnRegine;
+use Regine\Exceptions\Alternation\NullAlternationComponentException;
 use Regine\Regine;
-use RuntimeException;
 
 /**
  * Trait for adding alternation methods to Regine
@@ -46,7 +46,7 @@ trait HasAlternation
         $alternationPattern = $callback();
 
         if (! $alternationPattern instanceof Regine) {
-            throw new InvalidArgumentException('Alternation callback must return a Regine instance.');
+            throw new AlternationCallbackDoesntReturnRegine;
         }
 
         // Wrap the alternation pattern in a non-capturing group
@@ -93,7 +93,7 @@ trait HasAlternation
             $alternationComponent = array_pop($components);
 
             if ($alternationComponent === null) {
-                throw new RuntimeException('Expected alternation component but found null');
+                throw new NullAlternationComponentException;
             }
 
             // Get existing alternatives and add the new one

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use InvalidArgumentException;
 use Regine\Contracts\RegexComponent;
+use Regine\Exceptions\Alternation\EmptyAlternationException;
 use Regine\Regine;
 
 /**
@@ -24,12 +24,12 @@ class AlternationComponent implements RegexComponent
      *
      * @param  array<Regine|string>  $alternatives  An array of alternatives, each as a Regine object or string.
      *
-     * @throws InvalidArgumentException If no alternatives are provided.
+     * @throws EmptyAlternationException If no alternatives are provided.
      */
     public function __construct(array $alternatives)
     {
         if ($alternatives === []) {
-            throw new InvalidArgumentException('Alternation requires at least one alternative.');
+            throw new EmptyAlternationException;
         }
 
         $this->alternatives = array_map(
