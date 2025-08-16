@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use InvalidArgumentException;
 use Regine\Contracts\RegexComponent;
+use Regine\Exceptions\Literal\EmptyLiteralComponentException;
 use Regine\ValueObjects\SafeCharacter;
 use Regine\ValueObjects\SafeString;
 
@@ -20,12 +20,12 @@ class LiteralComponent implements RegexComponent
      *
      * @param  string  $text  The literal text to represent.
      *
-     * @throws InvalidArgumentException If the provided text is an empty string.
+     * @throws EmptyLiteralComponentException If the provided text is an empty string.
      */
     public function __construct(string $text)
     {
         if ($text === '') {
-            throw new InvalidArgumentException('Literal text cannot be empty.');
+            throw new EmptyLiteralComponentException;
         }
         $this->text = SafeString::from($text);
     }

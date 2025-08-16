@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Regine\Exceptions\Literal\EmptyLiteralComponentException;
 use Regine\Regine;
 
 // Basic literal tests
@@ -31,7 +32,7 @@ describe('Basic Literal Text', function () {
 describe('Literal Error Handling', function () {
     it('throws exception for empty literal', function () {
         Regine::make()->literal('');
-    })->throws(InvalidArgumentException::class, 'Literal text cannot be empty.');
+    })->throws(EmptyLiteralComponentException::class);
 });
 
 // Special character and escaping tests
