@@ -186,7 +186,7 @@ class CharacterClassComponent implements RegexComponent
      */
     public function getType(): string
     {
-        return self::TYPE;
+        return static::TYPE;
     }
 
     /**
