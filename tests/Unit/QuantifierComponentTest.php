@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Regine\Exceptions\Quantifier\MinIsBiggerThanMaxException;
+use Regine\Exceptions\Quantifier\NegativeQuantifierException;
 use Regine\Regine;
 
 // Basic quantifier tests
@@ -74,23 +76,23 @@ describe('Quantifier Edge Cases', function () {
 describe('Quantifier Error Handling', function () {
     it('throws for negative exactly count', function () {
         Regine::make()->digit()->exactly(-1);
-    })->throws(InvalidArgumentException::class, 'Quantifier count must be non-negative.');
+    })->throws(NegativeQuantifierException::class);
 
     it('throws for negative atLeast count', function () {
         Regine::make()->digit()->atLeast(-1);
-    })->throws(InvalidArgumentException::class, 'Quantifier count must be non-negative.');
+    })->throws(NegativeQuantifierException::class);
 
     it('throws for negative between min', function () {
         Regine::make()->digit()->between(-1, 5);
-    })->throws(InvalidArgumentException::class, 'Quantifier counts must be non-negative.');
+    })->throws(NegativeQuantifierException::class);
 
     it('throws for negative between max', function () {
         Regine::make()->digit()->between(0, -1);
-    })->throws(InvalidArgumentException::class, 'Quantifier counts must be non-negative.');
+    })->throws(NegativeQuantifierException::class);
 
     it('throws for invalid between range', function () {
         Regine::make()->digit()->between(5, 3);
-    })->throws(InvalidArgumentException::class, 'Minimum count must be less than or equal to maximum count.');
+    })->throws(MinIsBiggerThanMaxException::class);
 });
 
 // Integration tests

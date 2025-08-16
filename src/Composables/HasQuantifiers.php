@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Regine\Composables;
 
-use InvalidArgumentException;
 use Regine\Collections\PatternCollection;
 use Regine\Components\GroupComponent;
 use Regine\Components\QuantifierComponent;
 use Regine\Enums\GroupTypesEnum;
-use RuntimeException;
+use Regine\Exceptions\Alternation\NullAlternationComponentException;
+use Regine\Exceptions\Quantifier\QuantifierForNoPreceedingElementException;
+use Regine\Exceptions\Quantifier\UnquatifyablePreceedingElement;
 
 trait HasQuantifiers
 {
@@ -77,24 +78,23 @@ trait HasQuantifiers
      * Adds a quantifier to the last regex component in the pattern.
      *
      * If the last component is an alternation, it is first wrapped in a non-capturing group before applying the quantifier.
-     * Throws an InvalidArgumentException if there is no preceding element or if the last component cannot be quantified.
-     * Throws a RuntimeException if an expected alternation component is missing.
      *
      * @param  QuantifierComponent  $quantifier  The quantifier to apply to the last component.
      *
-     * @throws InvalidArgumentException If there is no preceding element or the last component cannot be quantified.
-     * @throws RuntimeException If an expected alternation component is missing.
+     * @throws QuantifierForNoPreceedingElementException If there is no preceding element.
+     * @throws UnquatifyablePreceedingElement If the last component cannot be quantified.
+     * @throws NullAlternationComponentException If an expected alternation component is missing.
      */
     private function addQuantifier(QuantifierComponent $quantifier): void
     {
         $lastComponent = $this->components->getLastComponent();
 
         if ($lastComponent === null) {
-            throw new InvalidArgumentException('Cannot add quantifier: no preceding element.');
+            throw new QuantifierForNoPreceedingElementException;
         }
 
         if (! $lastComponent->canBeQuantified()) {
-            throw new InvalidArgumentException('Cannot quantify the preceding element.');
+            throw new UnquatifyablePreceedingElement;
         }
 
         // If the last component is an alternation, wrap it in a non-capturing group
@@ -104,7 +104,7 @@ trait HasQuantifiers
             $alternationComponent = array_pop($components);
 
             if ($alternationComponent === null) {
-                throw new RuntimeException('Expected alternation component but found null');
+                throw new NullAlternationComponentException;
             }
 
             // Create a new pattern collection without the alternation

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use InvalidArgumentException;
 use Regine\Contracts\RegexComponent;
 use Regine\Enums\QuantifierTypesEnum;
+use Regine\Exceptions\Quantifier\MinIsBiggerThanMaxException;
+use Regine\Exceptions\Quantifier\NegativeQuantifierException;
 
 class QuantifierComponent implements RegexComponent
 {
@@ -23,64 +24,97 @@ class QuantifierComponent implements RegexComponent
         $this->parameters = $parameters;
     }
 
+    /**
+     * Creates a quantifier that matches zero or more occurrences of the preceding element.
+     */
     public static function zeroOrMore(): self
     {
         return new self(QuantifierTypesEnum::ZERO_OR_MORE);
     }
 
+    /**
+     * Creates a quantifier that matches one or more occurrences of the preceding element.
+     */
     public static function oneOrMore(): self
     {
         return new self(QuantifierTypesEnum::ONE_OR_MORE);
     }
 
+    /**
+     * Creates a quantifier that matches zero or one occurrence of the preceding element.
+     */
     public static function optional(): self
     {
         return new self(QuantifierTypesEnum::OPTIONAL);
     }
 
-    public static function exactly(int $n): self
+    /**
+     * Creates a quantifier that matches exactly n occurrences of the preceding element.
+     *
+     * @throws NegativeQuantifierException If the count is negative.
+     */
+    public static function exactly(int $count): self
     {
-        if ($n < 0) {
-            throw new InvalidArgumentException('Quantifier count must be non-negative.');
+        if ($count < 0) {
+            throw new NegativeQuantifierException;
         }
 
-        return new self(QuantifierTypesEnum::EXACTLY, ['count' => $n]);
+        return new self(QuantifierTypesEnum::EXACTLY, ['count' => $count]);
     }
 
-    public static function atLeast(int $n): self
+    /**
+     * @throws NegativeQuantifierException If the minimum count is negative.
+     */
+    public static function atLeast(int $count): self
     {
-        if ($n < 0) {
-            throw new InvalidArgumentException('Quantifier count must be non-negative.');
+        if ($count < 0) {
+            throw new NegativeQuantifierException;
         }
 
-        return new self(QuantifierTypesEnum::AT_LEAST, ['min' => $n]);
+        return new self(QuantifierTypesEnum::AT_LEAST, ['min' => $count]);
     }
 
+    /**
+     * @throws NegativeQuantifierException If the minimum or maximum count is negative.
+     * @throws MinIsBiggerThanMaxException If the minimum count is greater than the maximum count.
+     */
     public static function between(int $min, int $max): self
     {
         if ($min < 0 || $max < 0) {
-            throw new InvalidArgumentException('Quantifier counts must be non-negative.');
+            throw new NegativeQuantifierException;
         }
 
         if ($min > $max) {
-            throw new InvalidArgumentException('Minimum count must be less than or equal to maximum count.');
+            throw new MinIsBiggerThanMaxException(min: $min, max: $max);
         }
 
         return new self(QuantifierTypesEnum::BETWEEN, ['min' => $min, 'max' => $max]);
     }
 
+    /**
+     * Compiles the quantifier component into its corresponding regex string representation based on the quantifier type.
+     *
+     * @return string The compiled regex string for the quantifier.
+     */
     public function compile(): string
     {
         return $this->quantifierType->getRegex($this->parameters);
     }
 
+    /**
+     * Returns the type identifier for this regex component.
+     *
+     * @return string The string 'QUANTIFIER'.
+     */
     public function getType(): string
     {
         return $this->quantifierType->value;
     }
 
     /**
-     * @return array<string, mixed>
+     * Returns an associative array containing metadata about the quantifier component, including its type, quantifier, parameters, and enum value.
+     *
+     * @return array{type: string, quantifier: string, parameters: array<string, int>, enum: string}
      */
     public function getMetadata(): array
     {
@@ -92,11 +126,21 @@ class QuantifierComponent implements RegexComponent
         ];
     }
 
-    public function canBeQuantified(): bool
+    /**
+     * Indicates whether the component can be quantified.
+     *
+     * @return false Always returns false.
+     */
+    public function canBeQuantified(): false
     {
         return false; // Quantifiers cannot be quantified
     }
 
+    /**
+     * Returns a human-readable description of the quantifier component.
+     *
+     * @return string The description of the quantifier component.
+     */
     public function getDescription(): string
     {
         $description = $this->quantifierType->getBaseDescription();
