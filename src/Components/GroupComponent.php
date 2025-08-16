@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use InvalidArgumentException;
 use Regine\Contracts\RegexComponent;
 use Regine\Enums\GroupTypesEnum;
+use Regine\Exceptions\Group\ConditionalGroupWithNoConditionException;
+use Regine\Exceptions\Group\ConditionForUncoditionalGroupException;
+use Regine\Exceptions\Group\EmptyGroupPatternException;
+use Regine\Exceptions\Group\InvalidGroupNameException;
+use Regine\Exceptions\Group\NameForUnnamedGroupException;
+use Regine\Exceptions\Group\NoNameForNamedGroupException;
 use Regine\Regine;
 
 /**
@@ -32,7 +37,12 @@ class GroupComponent implements RegexComponent
      * @param  string|null  $condition  The condition for conditional groups, if applicable.
      * @param  Regine|string|null  $elsePattern  The pattern for the else branch in conditional groups, if applicable.
      *
-     * @throws InvalidArgumentException If parameters are invalid for the specified group type.
+     * @throws NoNameForNamedGroupException If the group is named but has no name.
+     * @throws InvalidGroupNameException If the group name is invalid.
+     * @throws ConditionalGroupWithNoConditionException If the group is conditional but has no condition.
+     * @throws NameForUnnamedGroupException If the group is unnamed (numbered) but has a name.
+     * @throws ConditionForUncoditionalGroupException If the group is not conditional but has a condition or else pattern.
+     * @throws EmptyGroupPatternException If the group pattern is empty.
      */
     public function __construct(
         GroupTypesEnum $type,
@@ -144,16 +154,16 @@ class GroupComponent implements RegexComponent
      * Compiles and returns the regex string for a conditional group.
      *
      * Constructs a conditional group in the format `(?({condition}){pattern}|{elsePattern})`.
-     * Throws an InvalidArgumentException if the condition is not set.
+     * Throws a ConditionalGroupWithNoConditionException if the condition is not set.
      *
      * @return string The compiled regex string for the conditional group.
      *
-     * @throws InvalidArgumentException If the condition is missing.
+     * @throws ConditionalGroupWithNoConditionException If the condition is not set.
      */
     private function compileConditionalGroup(): string
     {
         if (! $this->condition) {
-            throw new InvalidArgumentException('Conditional group requires a condition.');
+            throw new ConditionalGroupWithNoConditionException;
         }
 
         $compiled = "(?({$this->condition}){$this->pattern}";
@@ -170,32 +180,37 @@ class GroupComponent implements RegexComponent
      *
      * Ensures that named groups have valid names, conditional groups have conditions, only appropriate group types have names or conditions, and that the pattern is not empty.
      *
-     * @throws InvalidArgumentException If any parameter is invalid for the specified group type.
+     * @throws NoNameForNamedGroupException If the group is named but has no name.
+     * @throws InvalidGroupNameException If the group name is invalid.
+     * @throws ConditionalGroupWithNoConditionException If the group is conditional but has no condition.
+     * @throws NameForUnnamedGroupException If the group is unnamed (numbered) but has a name.
+     * @throws ConditionForUncoditionalGroupException If the group is not conditional but has a condition or else pattern.
+     * @throws EmptyGroupPatternException If the group pattern is empty.
      */
     private function validateParameters(): void
     {
         if ($this->type === GroupTypesEnum::NAMED && ! $this->name) {
-            throw new InvalidArgumentException('Named group requires a name.');
+            throw new NoNameForNamedGroupException;
         }
 
         if ($this->type === GroupTypesEnum::NAMED && ! $this->isValidGroupName($this->name)) {
-            throw new InvalidArgumentException('Invalid group name. Must contain only letters, digits, and underscores, and cannot start with a digit.');
+            throw new InvalidGroupNameException;
         }
 
         if ($this->type === GroupTypesEnum::CONDITIONAL && ! $this->condition) {
-            throw new InvalidArgumentException('Conditional group requires a condition.');
+            throw new ConditionalGroupWithNoConditionException;
         }
 
         if ($this->type !== GroupTypesEnum::NAMED && $this->name) {
-            throw new InvalidArgumentException('Only named groups can have a name.');
+            throw new NameForUnnamedGroupException;
         }
 
         if ($this->type !== GroupTypesEnum::CONDITIONAL && ($this->condition || $this->elsePattern)) {
-            throw new InvalidArgumentException('Only conditional groups can have conditions or else patterns.');
+            throw new ConditionForUncoditionalGroupException;
         }
 
         if ($this->pattern === '') {
-            throw new InvalidArgumentException('Group pattern cannot be empty.');
+            throw new EmptyGroupPatternException;
         }
     }
 

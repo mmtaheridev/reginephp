@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 use Regine\Components\GroupComponent;
 use Regine\Enums\GroupTypesEnum;
+use Regine\Exceptions\Group\ConditionalGroupWithNoConditionException;
+use Regine\Exceptions\Group\ConditionForUncoditionalGroupException;
+use Regine\Exceptions\Group\EmptyGroupPatternException;
+use Regine\Exceptions\Group\InvalidGroupNameException;
+use Regine\Exceptions\Group\NameForUnnamedGroupException;
+use Regine\Exceptions\Group\NoNameForNamedGroupException;
 use Regine\Regine;
 
 // Basic group component tests
@@ -57,36 +63,36 @@ describe('GroupComponent', function () {
 
     it('can be quantified', function () {
         $component = new GroupComponent(GroupTypesEnum::CAPTURING, 'abc');
-        expect($component->canBeQuantified())->toBe(true);
+        expect($component->canBeQuantified())->toBeTrue();
     });
 
     it('provides correct metadata for capturing group', function () {
         $component = new GroupComponent(GroupTypesEnum::CAPTURING, 'abc');
         $metadata = $component->getMetadata();
 
-        expect($metadata['type'])->toBe('group');
-        expect($metadata['group_type'])->toBe('CAPTURING');
-        expect($metadata['pattern'])->toBe('abc');
-        expect($metadata['name'])->toBeNull();
-        expect($metadata['condition'])->toBeNull();
-        expect($metadata['else_pattern'])->toBeNull();
+        expect($metadata['type'])->toBe('group')
+            ->and($metadata['group_type'])->toBe('CAPTURING')
+            ->and($metadata['pattern'])->toBe('abc')
+            ->and($metadata['name'])->toBeNull()
+            ->and($metadata['condition'])->toBeNull()
+            ->and($metadata['else_pattern'])->toBeNull();
     });
 
     it('provides correct metadata for named group', function () {
         $component = new GroupComponent(GroupTypesEnum::NAMED, 'abc', 'test');
         $metadata = $component->getMetadata();
 
-        expect($metadata['group_type'])->toBe('NAMED');
-        expect($metadata['name'])->toBe('test');
+        expect($metadata['group_type'])->toBe('NAMED')
+            ->and($metadata['name'])->toBe('test');
     });
 
     it('provides correct metadata for conditional group', function () {
         $component = new GroupComponent(GroupTypesEnum::CONDITIONAL, 'yes', null, '1', 'no');
         $metadata = $component->getMetadata();
 
-        expect($metadata['group_type'])->toBe('CONDITIONAL');
-        expect($metadata['condition'])->toBe('1');
-        expect($metadata['else_pattern'])->toBe('no');
+        expect($metadata['group_type'])->toBe('CONDITIONAL')
+            ->and($metadata['condition'])->toBe('1')
+            ->and($metadata['else_pattern'])->toBe('no');
     });
 
     it('provides correct description for capturing group', function () {
@@ -109,32 +115,32 @@ describe('GroupComponent', function () {
 describe('GroupComponent Error Handling', function () {
     it('throws exception for named group without name', function () {
         expect(fn () => new GroupComponent(GroupTypesEnum::NAMED, 'abc'))
-            ->toThrow(InvalidArgumentException::class, 'Named group requires a name.');
+            ->toThrow(NoNameForNamedGroupException::class);
     });
 
     it('throws exception for invalid group name', function () {
         expect(fn () => new GroupComponent(GroupTypesEnum::NAMED, 'abc', '123invalid'))
-            ->toThrow(InvalidArgumentException::class, 'Invalid group name');
+            ->toThrow(InvalidGroupNameException::class);
     });
 
     it('throws exception for conditional group without condition', function () {
         expect(fn () => new GroupComponent(GroupTypesEnum::CONDITIONAL, 'abc'))
-            ->toThrow(InvalidArgumentException::class, 'Conditional group requires a condition.');
+            ->toThrow(ConditionalGroupWithNoConditionException::class);
     });
 
     it('throws exception for empty pattern', function () {
         expect(fn () => new GroupComponent(GroupTypesEnum::CAPTURING, ''))
-            ->toThrow(InvalidArgumentException::class, 'Group pattern cannot be empty.');
+            ->toThrow(EmptyGroupPatternException::class);
     });
 
     it('throws exception for non-named group with name', function () {
         expect(fn () => new GroupComponent(GroupTypesEnum::CAPTURING, 'abc', 'test'))
-            ->toThrow(InvalidArgumentException::class, 'Only named groups can have a name.');
+            ->toThrow(NameForUnnamedGroupException::class);
     });
 
     it('throws exception for non-conditional group with condition', function () {
         expect(fn () => new GroupComponent(GroupTypesEnum::CAPTURING, 'abc', null, '1'))
-            ->toThrow(InvalidArgumentException::class, 'Only conditional groups can have conditions');
+            ->toThrow(ConditionForUncoditionalGroupException::class);
     });
 
     it('accepts valid group names', function () {
@@ -147,12 +153,21 @@ describe('GroupComponent Error Handling', function () {
     });
 
     it('rejects invalid group names', function () {
-        $invalidNames = ['123test', 'test-123', 'test.123', 'test@123', ''];
+        $invalidNames = ['123test', 'test-123', 'test.123', 'test@123'];
 
-        foreach ($invalidNames as $name) {
-            expect(fn () => new GroupComponent(GroupTypesEnum::NAMED, 'abc', $name))
-                ->toThrow(InvalidArgumentException::class);
+        foreach ($invalidNames as $key => $name) {
+            expect(fn () => new GroupComponent(
+                type: GroupTypesEnum::NAMED,
+                pattern: 'abc',
+                name: $name,
+            ))->toThrow(InvalidGroupNameException::class);
         }
+
+        expect(fn () => new GroupComponent(
+            type: GroupTypesEnum::NAMED,
+            pattern: 'abc',
+            name: '',
+        ))->toThrow(NoNameForNamedGroupException::class);
     });
 });
 
