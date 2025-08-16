@@ -9,7 +9,7 @@ use Regine\Contracts\RegexComponent;
 /**
  * Collection of RegexComponent instances
  *
- * Every Regine instance is possibly a collection of RegexComponent instances
+ * A Regine instance composes zero or more RegexComponent items via this collection.
  */
 class PatternCollection
 {
@@ -22,9 +22,9 @@ class PatternCollection
      * Enables method chaining by returning the current PatternCollection instance.
      *
      * @param  RegexComponent  $component  The regex component to add.
-     * @return self The current PatternCollection instance.
+     * @return static The current PatternCollection instance.
      */
-    public function add(RegexComponent $component): self
+    public function add(RegexComponent $component): static
     {
         $this->components[] = $component;
 
@@ -56,8 +56,10 @@ class PatternCollection
         if ($this->components === []) {
             return null;
         }
+        /** @var int $lastIndex */
+        $lastIndex = array_key_last($this->components);
 
-        return end($this->components);
+        return $this->components[$lastIndex];
     }
 
     /**
