@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use InvalidArgumentException;
 use Regine\Contracts\RegexComponent;
 use Regine\Enums\CharacterClassTypesEnum;
+use Regine\Exceptions\CharacterClass\EmptyCharacterClassException;
+use Regine\Exceptions\CharacterClass\RangeBoundariesAreNotSetException;
+use Regine\Exceptions\CharacterClass\RangeBoundariesNotSingleCharacterException;
+use Regine\Exceptions\CharacterClass\RangeBoundariesNotValidUTF8Exception;
+use Regine\Exceptions\CharacterClass\RangeStartGreaterThanEndException;
 use Regine\ValueObjects\SafeCharacter;
 use Regine\ValueObjects\SafeString;
 
@@ -23,6 +27,8 @@ class CharacterClassComponent implements RegexComponent
     private readonly SafeString $chars;
     private readonly bool $negated;
     private readonly CharacterClassTypesEnum $classType;
+    private readonly ?SafeCharacter $fromChar;
+    private readonly ?SafeCharacter $toChar;
 
     /**
      * Initializes a new character class component with the specified characters, negation flag, and class type.
@@ -30,20 +36,41 @@ class CharacterClassComponent implements RegexComponent
      * @param  string  $chars  The characters to include in the character class.
      * @param  bool  $negated  Whether the character class is negated.
      * @param  CharacterClassTypesEnum  $type  The type of character class (e.g., any of, none of, range).
+     * @param  string|null  $fromChar  For RANGE type, the start character of the range.
+     * @param  string|null  $toChar  For RANGE type, the end character of the range.
      *
-     * @throws InvalidArgumentException If the character string is empty.
+     * @throws EmptyCharacterClassException If the character string is empty or if RANGE type lacks endpoints.
+     * @throws RangeBoundariesAreNotSetException If type is RANGE and the range boundaries are not set.
+     * @throws RangeBoundariesNotSingleCharacterException If type is RANGE and the range boundaries are not single characters.
+     * @throws RangeBoundariesNotValidUTF8Exception If type is RANGE and the range boundaries are not valid UTF-8 characters.
+     * @throws RangeStartGreaterThanEndException If type is RANGE and the range start is greater than the range end.
      */
     public function __construct(
         string $chars,
         bool $negated,
-        CharacterClassTypesEnum $type
+        CharacterClassTypesEnum $type,
+        ?string $fromChar = null,
+        ?string $toChar = null
     ) {
         if ($chars === '') {
-            throw new InvalidArgumentException('Character class cannot be empty.');
+            throw new EmptyCharacterClassException;
         }
+
         $this->chars = SafeString::from($chars);
         $this->negated = $negated;
         $this->classType = $type;
+
+        // For RANGE type, store explicit endpoints
+        if ($this->classType === CharacterClassTypesEnum::RANGE) {
+            if ($fromChar === null || $toChar === null) {
+                throw new RangeBoundariesAreNotSetException;
+            }
+            $this->fromChar = SafeCharacter::from($fromChar);
+            $this->toChar = SafeCharacter::from($toChar);
+        } else {
+            $this->fromChar = null;
+            $this->toChar = null;
+        }
     }
 
     /**
@@ -51,7 +78,8 @@ class CharacterClassComponent implements RegexComponent
      *
      * @param  string  $chars  The set of characters to include in the character class.
      * @return self A new CharacterClassComponent representing the specified character set.
-     * @throws InvalidArgumentException If $chars is empty.
+     *
+     * @throws EmptyCharacterClassException If $chars is empty.
      */
     public static function anyOf(string $chars): self
     {
@@ -67,7 +95,8 @@ class CharacterClassComponent implements RegexComponent
      *
      * @param  string  $chars  The characters to exclude from the match.
      * @return self The constructed character class component.
-     * @throws InvalidArgumentException If $chars is empty.
+     *
+     * @throws EmptyCharacterClassException If $chars is empty.
      */
     public static function noneOf(string $chars): self
     {
@@ -85,13 +114,21 @@ class CharacterClassComponent implements RegexComponent
      * @param  string  $to  The ending character of the range.
      * @return self The character class component for the specified range.
      *
-     * @throws InvalidArgumentException If either boundary is not a single character or if the start is greater than the end.
+     * @throws RangeBoundariesNotSingleCharacterException If the range boundaries are not single characters.
+     * @throws RangeBoundariesNotValidUTF8Exception If the range boundaries are not valid UTF-8 characters.
+     * @throws RangeStartGreaterThanEndException If the range start is greater than the range end.
      */
     public static function range(string $from, string $to): self
     {
         static::validateRange($from, $to);
 
-        return new self($from . '-' . $to, false, CharacterClassTypesEnum::RANGE);
+        return new self(
+            chars: $from . '-' . $to,
+            negated: false,
+            type: CharacterClassTypesEnum::RANGE,
+            fromChar: $from,
+            toChar: $to
+        );
     }
 
     /**
@@ -103,7 +140,9 @@ class CharacterClassComponent implements RegexComponent
      * @param  string  $to  The ending character of the range (single UTF-8 character).
      * @return self The character class component for the specified negated range.
      *
-     * @throws InvalidArgumentException If boundaries are not single characters or start > end.
+     * @throws RangeBoundariesNotSingleCharacterException If the range boundaries are not single characters.
+     * @throws RangeBoundariesNotValidUTF8Exception If the range boundaries are not valid UTF-8 characters.
+     * @throws RangeStartGreaterThanEndException If the range start is greater than the range end.
      *
      * <code>
      * // Matches one or more non-digit characters
@@ -120,7 +159,9 @@ class CharacterClassComponent implements RegexComponent
         return new self(
             chars: $from . '-' . $to,
             negated: true,
-            type: CharacterClassTypesEnum::RANGE
+            type: CharacterClassTypesEnum::RANGE,
+            fromChar: $from,
+            toChar: $to
         );
     }
 
@@ -130,13 +171,15 @@ class CharacterClassComponent implements RegexComponent
      * @param  string  $from  The starting character of the range.
      * @param  string  $to  The ending character of the range.
      *
-     * @throws InvalidArgumentException If the range boundaries are not single characters.
+     * @throws RangeBoundariesNotSingleCharacterException If the range boundaries are not single characters.
+     * @throws RangeBoundariesNotValidUTF8Exception If the range boundaries are not valid UTF-8 characters.
+     * @throws RangeStartGreaterThanEndException If the range start is greater than the range end.
      */
     protected static function validateRange(string $from, string $to): void
     {
         // Validate that the range boundaries are single characters
         if (mb_strlen($from, 'UTF-8') !== 1 || mb_strlen($to, 'UTF-8') !== 1) {
-            throw new InvalidArgumentException('Range boundaries must be single characters.');
+            throw new RangeBoundariesNotSingleCharacterException;
         }
 
         // Validate that the range boundaries are valid UTF-8 characters
@@ -144,37 +187,43 @@ class CharacterClassComponent implements RegexComponent
         $toCodePoint = mb_ord($to, 'UTF-8');
 
         if ($fromCodePoint === false || $toCodePoint === false) {
-            throw new InvalidArgumentException('Range boundaries must be valid UTF-8 characters.');
+            throw new RangeBoundariesNotValidUTF8Exception;
         }
 
         // Validate that the range start is less than or equal to the range end
         if ($fromCodePoint > $toCodePoint) {
-            throw new InvalidArgumentException('Range start must be less than or equal to range end.');
+            throw new RangeStartGreaterThanEndException;
         }
     }
 
     /**
      * Compiles the character class component into a regex character class string.
      *
-     * Handles negation and character ranges, escaping characters as needed for safe inclusion in a regex pattern.
-     * For ranges, the internal raw string is split on the first dash ("-") to extract the two sides safely.
-     * For variable-length parts (e.g., "ab-cd"), it uses the first character of the left part ("a") and the
-     * last character of the right part ("d") as the actual range endpoints, escaping each endpoint individually.
-     * If the format is unexpected (no dash or missing endpoints), it falls back to normal character-class escaping.
+     * For ranges, uses the stored explicit endpoints and escapes them properly.
+     * For other types, uses regular character class escaping.
      *
      * @return string The compiled regex character class.
+     *
+     * @throws RangeBoundariesAreNotSetException If the RANGE type lacks endpoints.
      */
     public function compile(): string
     {
         $prefix = $this->negated ? '^' : '';
 
-        // For ranges, handle the dash specially - it should not be escaped as it's the range operator
         if ($this->classType === CharacterClassTypesEnum::RANGE) {
-            $escapedChars = $this->handleRangeCharacterClass();
-        } else {
-            // For non-range character classes, use regular escaping
-            $escapedChars = $this->chars->escapedForCharacterClass();
+            if ($this->fromChar === null || $this->toChar === null) {
+                throw new RangeBoundariesAreNotSetException;
+            }
+
+            // Use stored explicit endpoints for ranges
+            $fromEscaped = $this->fromChar->escapedForCharacterClass();
+            $toEscaped = $this->toChar->escapedForCharacterClass();
+
+            return '[' . $prefix . $fromEscaped . '-' . $toEscaped . ']';
         }
+
+        // For non-range character classes, use regular escaping
+        $escapedChars = $this->chars->escapedForCharacterClass();
 
         return '[' . $prefix . $escapedChars . ']';
     }
@@ -186,23 +235,23 @@ class CharacterClassComponent implements RegexComponent
      */
     public function getType(): string
     {
-        return static::TYPE;
+        return self::TYPE;
     }
 
     /**
      * Returns metadata describing the character class component, including type, raw characters, negation status, class type, and special character details.
      *
      * @return array<string, mixed> Associative array with keys: 'type', 'chars', 'negated', 'classType', 'hasSpecialCharacters', 'specialCharacters', and 'specialCharactersEscaped'.
+     *
+     * @throws RangeBoundariesAreNotSetException If the RANGE type lacks endpoints.
      */
     public function getMetadata(): array
     {
-        return [
+        $metadata = [
             'type' => static::TYPE,
             'chars' => $this->chars->getRaw(),
             'negated' => $this->negated,
             'classType' => $this->classType->value,
-            // Signal up to the builder that this component requires Unicode semantics
-            // when multibyte characters are present (so the 'u' flag can be enforced).
             'requiresUnicode' => $this->containsMultibyteCharacters(),
             'hasSpecialCharacters' => $this->chars->hasSpecialCharacters(),
             'specialCharacters' => array_map(
@@ -214,6 +263,20 @@ class CharacterClassComponent implements RegexComponent
                 $this->chars->getSpecialCharacters()
             ),
         ];
+
+        // Add range-specific metadata
+        if ($this->classType === CharacterClassTypesEnum::RANGE) {
+            if ($this->fromChar === null || $this->toChar === null) {
+                throw new RangeBoundariesAreNotSetException;
+            }
+
+            $metadata['fromChar'] = $this->fromChar->getRaw();
+            $metadata['toChar'] = $this->toChar->getRaw();
+            $metadata['fromCharCode'] = mb_ord($this->fromChar->getRaw());
+            $metadata['toCharCode'] = mb_ord($this->toChar->getRaw());
+        }
+
+        return $metadata;
     }
 
     /**
@@ -229,29 +292,25 @@ class CharacterClassComponent implements RegexComponent
     /**
      * Returns a human-readable description of the character class, indicating its type and included or excluded characters.
      *
-     * For range types, describes the character range boundaries. Internally, the raw string is split on the first dash;
-     * for variable-length parts (e.g., "ab-cd"), the description reflects the first character of the left part and the
-     * last character of the right part ("a" to "d"). For other types, specifies whether the class matches any or none
-     * of the given characters.
+     * For range types, describes the actual range boundaries. For other types, specifies whether the class matches
+     * any or none of the given characters.
      *
      * @return string The description of the character class.
+     *
+     * @throws RangeBoundariesAreNotSetException If the RANGE type lacks endpoints.
      */
     public function getDescription(): string
     {
         if ($this->classType === CharacterClassTypesEnum::RANGE) {
-            $rawChars = $this->chars->getRaw();
-
-            // Split on the first dash and safely extract endpoints (multibyte-aware)
-            $parts = explode('-', $rawChars, 2);
-            if (count($parts) === 2 && $parts[0] !== '' && $parts[1] !== '') {
-                $from = mb_substr($parts[0], 0, 1, 'UTF-8');
-                $rightLen = mb_strlen($parts[1], 'UTF-8');
-                $to = mb_substr($parts[1], $rightLen - 1, 1, 'UTF-8');
-
-                $prefix = $this->negated ? 'Negated character' : 'Character';
-
-                return "{$prefix} range: from '{$from}' to '{$to}'";
+            if ($this->fromChar === null || $this->toChar === null) {
+                throw new RangeBoundariesAreNotSetException;
             }
+
+            $from = $this->fromChar->getRaw();
+            $to = $this->toChar->getRaw();
+            $prefix = $this->negated ? 'Negated character' : 'Character';
+
+            return "{$prefix} range: from '{$from}' to '{$to}'";
         }
 
         $action = $this->negated ? 'none of' : 'any of';
@@ -260,39 +319,11 @@ class CharacterClassComponent implements RegexComponent
     }
 
     /**
-     * Handles the range character class
-     *
-     * @return string The escaped characters for the range.
-     */
-    protected function handleRangeCharacterClass(): string
-    {
-        // Extract the range components
-        $rawChars = $this->chars->getRaw();
-
-        // Split on the first dash to safely extract start and end parts (multibyte-aware)
-        $parts = explode('-', $rawChars, 2);
-
-        if (count($parts) === 2 && $parts[0] !== '' && $parts[1] !== '') {
-            // Take the first character of the left part and the last character of the right part
-            $fromChar = mb_substr($parts[0], 0, 1, 'UTF-8');
-            $rightLen = mb_strlen($parts[1], 'UTF-8');
-            $toChar = mb_substr($parts[1], $rightLen - 1, 1, 'UTF-8');
-
-            $fromSafe = SafeString::from($fromChar);
-            $toSafe = SafeString::from($toChar);
-            $escapedChars = $fromSafe->escapedForCharacterClass() . '-' . $toSafe->escapedForCharacterClass();
-        } else {
-            // Fallback to regular escaping if format is unexpected
-            $escapedChars = $this->chars->escapedForCharacterClass();
-        }
-
-        return $escapedChars;
-    }
-
-    /**
      * Determines whether the character class contains any multibyte UTF-8 characters.
      *
      * Used to signal that Unicode mode ('u' flag) is required for correct semantics.
+     *
+     * @return bool True if the character class contains any multibyte UTF-8 characters, false otherwise.
      */
     private function containsMultibyteCharacters(): bool
     {

@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace Regine\Composables;
 
-use InvalidArgumentException;
 use Regine\Components\CharacterClassComponent;
+use Regine\Exceptions\CharacterClass\EmptyCharacterClassException;
+use Regine\Exceptions\CharacterClass\RangeBoundariesAreNotSetException;
+use Regine\Exceptions\CharacterClass\RangeBoundariesNotSingleCharacterException;
+use Regine\Exceptions\CharacterClass\RangeBoundariesNotValidUTF8Exception;
+use Regine\Exceptions\CharacterClass\RangeStartGreaterThanEndException;
 
+/**
+ * Adds character class functionality to the Regine builder.
+ */
 trait HasCharacterClasses
 {
     /**
@@ -14,7 +21,7 @@ trait HasCharacterClasses
      *
      * @param  string  $chars  The characters to include inside the class, e.g. "abc" → `[abc]`.
      * @return self Fluent builder instance for chaining.
-     * @throws InvalidArgumentException If $chars is empty.
+     * @throws EmptyCharacterClassException If the character string is empty.
      */
     public function anyOf(string $chars): self
     {
@@ -28,7 +35,7 @@ trait HasCharacterClasses
      *
      * @param  string  $chars  The characters to exclude inside the class, e.g. "abc" → `[^abc]`.
      * @return self Fluent builder instance for chaining.
-     * @throws InvalidArgumentException If $chars is empty.
+     * @throws EmptyCharacterClassException If the character string is empty.
      */
     public function noneOf(string $chars): self
     {
@@ -43,8 +50,10 @@ trait HasCharacterClasses
      * @param  string  $from  The starting character of the range (single UTF-8 character).
      * @param  string  $to  The ending character of the range (single UTF-8 character).
      * @return self Fluent builder instance for chaining.
-     *
-     * @throws InvalidArgumentException If boundaries are not single characters or start > end or if $from or $to is empty.
+     * @throws RangeBoundariesAreNotSetException If the range boundaries are not set.
+     * @throws RangeBoundariesNotSingleCharacterException If the range boundaries are not single characters.
+     * @throws RangeBoundariesNotValidUTF8Exception If the range boundaries are not valid UTF-8 characters.
+     * @throws RangeStartGreaterThanEndException If the range start is greater than the range end. 
      */
     public function range(string $from, string $to): self
     {
@@ -61,9 +70,11 @@ trait HasCharacterClasses
      * @param  string  $from  The starting character of the range (single UTF-8 character).
      * @param  string  $to  The ending character of the range (single UTF-8 character).
      * @return self Fluent builder instance for chaining.
-     *
-     * @throws InvalidArgumentException If boundaries are not single characters or start > end.
-     *
+     * @throws RangeBoundariesAreNotSetException If the range boundaries are not set.
+     * @throws RangeBoundariesNotSingleCharacterException If the range boundaries are not single characters.
+     * @throws RangeBoundariesNotValidUTF8Exception If the range boundaries are not valid UTF-8 characters.
+     * @throws RangeStartGreaterThanEndException If the range start is greater than the range end.
+     * 
      * <code>
      * $pattern = Regine::make()
      *     ->noneOfRange('0', '9')  // anything except digits
