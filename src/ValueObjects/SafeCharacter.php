@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Regine\ValueObjects;
 
-use InvalidArgumentException;
 use Regine\Enums\SpecialCharacterEnum;
+use Regine\Exceptions\InvalidCharacterLengthException;
 
 readonly class SafeCharacter
 {
@@ -23,17 +23,15 @@ readonly class SafeCharacter
     /**
      * Creates a SafeCharacter instance from a single-character string.
      *
-     * Throws an InvalidArgumentException if the input string is not exactly one character long.
-     *
      * @param  string  $char  The character to wrap.
      * @return self The SafeCharacter instance representing the given character.
      *
-     * @throws InvalidArgumentException If the input string is not a single character.
+     * @throws InvalidCharacterLengthException If the input string is not a single character.
      */
     public static function from(string $char): self
     {
         if (mb_strlen($char, 'UTF-8') !== 1) {
-            throw new InvalidArgumentException('SafeCharacter can only wrap single characters');
+            throw new InvalidCharacterLengthException;
         }
 
         $special = SpecialCharacterEnum::fromChar($char);

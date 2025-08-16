@@ -106,6 +106,7 @@ enum SpecialCharacterEnum: string
             self::RIGHT_BRACKET => '\]',
             self::CARET => '\^',
             self::DASH => '\-',
+            self::LEFT_BRACKET => '\[',
             default => $this->value,
         };
     }

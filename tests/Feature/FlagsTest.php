@@ -401,24 +401,24 @@ describe('Pattern Matching with Flags', function () {
     it('matches case-insensitive patterns', function () {
         $regine = Regine::make()->literal('Test')->caseInsensitive();
 
-        expect($regine->test('test'))->toBe(true);
-        expect($regine->test('TEST'))->toBe(true);
-        expect($regine->test('TeSt'))->toBe(true);
-        expect($regine->test('other'))->toBe(false);
+        expect($regine->test('test'))->toBeTrue()
+            ->and($regine->test('TEST'))->toBeTrue()
+            ->and($regine->test('TeSt'))->toBeTrue()
+            ->and($regine->test('other'))->toBeFalse();
     });
 
     it('matches multiline patterns', function () {
         $regine = Regine::make()->startOfString()->literal('test')->multiline();
         $text = "line1\ntest\nline3";
 
-        expect($regine->test($text))->toBe(true);
+        expect($regine->test($text))->toBeTrue();
     });
 
     it('matches dot-all patterns', function () {
         $regine = Regine::make()->literal('start')->anyChar()->oneOrMore()->literal('end')->dotAll();
         $text = "start\nsome\nlines\nend";
 
-        expect($regine->test($text))->toBe(true);
+        expect($regine->test($text))->toBeTrue();
     });
 
     it('matches unicode patterns', function () {
@@ -439,7 +439,7 @@ describe('Pattern Matching with Flags', function () {
             ->dotAll();
 
         $text = "test\nsome\nlines\nend";
-        expect($regine->test($text))->toBe(true);
+        expect($regine->test($text))->toBeTrue();
     });
 });
 

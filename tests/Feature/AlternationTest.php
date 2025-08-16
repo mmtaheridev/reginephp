@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Regine\Regine;
-use Regine\Exceptions\Alternation\EmptyAlternationException;
 use Regine\Exceptions\Alternation\AlternationCallbackDoesntReturnRegine;
+use Regine\Exceptions\Alternation\EmptyAlternationException;
+use Regine\Regine;
 
 // Basic alternation tests
 describe('Basic Alternation', function () {
