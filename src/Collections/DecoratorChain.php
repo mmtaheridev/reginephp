@@ -14,6 +14,8 @@ use Regine\Enums\DecoratorType;
  *
  * Ensures decorators are applied in the proper order: Component → Quantifier → Group → Lookaround
  * This maintains consistent regex compilation regardless of the order decorators are added.
+ * 
+ * FIXME: this is not used yet. should be incorporated in the codebase.
  */
 class DecoratorChain
 {
