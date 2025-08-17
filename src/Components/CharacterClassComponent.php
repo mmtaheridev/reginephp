@@ -6,6 +6,7 @@ namespace Regine\Components;
 
 use Regine\Contracts\RegexComponent;
 use Regine\Enums\CharacterClassTypesEnum;
+use Regine\Enums\ComponentType;
 use Regine\Exceptions\CharacterClass\EmptyCharacterClassException;
 use Regine\Exceptions\CharacterClass\RangeBoundariesAreNotSetException;
 use Regine\Exceptions\CharacterClass\RangeBoundariesNotSingleCharacterException;
@@ -22,8 +23,6 @@ use Regine\ValueObjects\SafeString;
  */
 class CharacterClassComponent implements RegexComponent
 {
-    public const TYPE = 'CHARACTER_CLASS';
-
     private readonly SafeString $chars;
     private readonly bool $negated;
     private readonly CharacterClassTypesEnum $classType;
@@ -235,7 +234,7 @@ class CharacterClassComponent implements RegexComponent
      */
     public function getType(): string
     {
-        return self::TYPE;
+        return ComponentType::CHARACTER_CLASS->value;
     }
 
     /**
@@ -248,7 +247,7 @@ class CharacterClassComponent implements RegexComponent
     public function getMetadata(): array
     {
         $metadata = [
-            'type' => static::TYPE,
+            'type' => $this->getType(),
             'chars' => $this->chars->getRaw(),
             'negated' => $this->negated,
             'classType' => $this->classType->value,
