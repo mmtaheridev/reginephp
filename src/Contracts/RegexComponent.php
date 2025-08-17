@@ -4,32 +4,14 @@ declare(strict_types=1);
 
 namespace Regine\Contracts;
 
-interface RegexComponent
+/**
+ * Interface for regex components that represent actual content.
+ *
+ * Components are elements that generate regex content (literals, character classes,
+ * anchors, etc.) as opposed to decorators that modify or wrap other elements.
+ */
+interface RegexComponent extends RegexElement
 {
-    /**
-     * Compile the component to its regex string representation
-     */
-    public function compile(): string;
-
-    /**
-     * Get the type of this component (for introspection)
-     */
-    public function getType(): string;
-
-    /**
-     * Get metadata about this component (for debugging/introspection)
-     *
-     * @return array<string, mixed>
-     */
-    public function getMetadata(): array;
-
-    /**
-     * Check if this component can be quantified
-     */
-    public function canBeQuantified(): bool;
-
-    /**
-     * Get a human-readable description of this component
-     */
-    public function getDescription(): string;
+    // All methods inherited from RegexElement
+    // Components focus on generating regex content
 }
