@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use Regine\Enums\ComponentType;
-use Regine\ValueObjects\SafeString;
 use Regine\Contracts\RegexComponent;
-use Regine\ValueObjects\SafeCharacter;
+use Regine\Enums\ComponentType;
 use Regine\Exceptions\Literal\EmptyLiteralComponentException;
+use Regine\ValueObjects\SafeCharacter;
+use Regine\ValueObjects\SafeString;
 
 class LiteralComponent implements RegexComponent
 {

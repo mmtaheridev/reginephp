@@ -4,38 +4,46 @@ declare(strict_types=1);
 
 namespace Regine;
 
-use Regine\Collections\PatternCollection;
+use Regine\Collections\RegexElementCollection;
+use Regine\Composables\HasAlternatedCallables;
 use Regine\Composables\HasAlternation;
 use Regine\Composables\HasAnchors;
 use Regine\Composables\HasCharacterClasses;
 use Regine\Composables\HasFlags;
+use Regine\Composables\HasGroupedCallables;
 use Regine\Composables\HasGroups;
 use Regine\Composables\HasLiterals;
+use Regine\Composables\HasLookaroudCallables;
 use Regine\Composables\HasLookarounds;
 use Regine\Composables\HasQuantifiers;
+use Regine\Composables\HasQunatifiedCallables;
 use Regine\Composables\HasShorthands;
 use Regine\ValueObjects\DebugInfo;
 
 class Regine
 {
-    use HasAlternation,
+    use HasAlternatedCallables,
+        HasAlternation,
         HasAnchors,
         HasCharacterClasses,
         HasFlags,
+        HasGroupedCallables,
         HasGroups,
         HasLiterals,
+        HasLookaroudCallables,
         HasLookarounds,
         HasQuantifiers,
+        HasQunatifiedCallables,
         HasShorthands;
 
-    protected PatternCollection $components;
+    protected RegexElementCollection $elements;
 
     /**
-     * Initializes a new Regine instance with an empty pattern component collection.
+     * Initializes a new Regine instance with an empty regex element collection.
      */
     public function __construct()
     {
-        $this->components = new PatternCollection;
+        $this->elements = new RegexElementCollection;
     }
 
     /**
@@ -61,7 +69,7 @@ class Regine
         // Auto-enforce Unicode flag if any component requires it.
         $flags = $this->enforeUnicodeAndUpdateFlagsIfRequired();
 
-        return $delimiter . $this->components->compile() . $delimiter . $flags;
+        return $delimiter . $this->elements->compile() . $delimiter . $flags;
     }
 
     /**
@@ -74,7 +82,7 @@ class Regine
      */
     public function compileRaw(): string
     {
-        return $this->components->compile();
+        return $this->elements->compile();
     }
 
     /**
@@ -94,25 +102,25 @@ class Regine
      */
     public function describe(): string
     {
-        return $this->components->describe();
+        return $this->elements->getDescription();
     }
 
     /**
-     * Get metadata about all components for debugging
+     * Get metadata about all elements for debugging
      *
-     * @return array<array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function getMetadata(): array
     {
-        return $this->components->getMetadata();
+        return $this->elements->getMetadata();
     }
 
     /**
-     * Get the count of components
+     * Get the count of elements
      */
-    public function getComponentCount(): int
+    public function getElementCount(): int
     {
-        return $this->components->count();
+        return $this->elements->count();
     }
 
     /**
@@ -120,7 +128,7 @@ class Regine
      */
     public function isEmpty(): bool
     {
-        return $this->components->isEmpty();
+        return $this->elements->isEmpty();
     }
 
     /**
@@ -169,7 +177,7 @@ class Regine
         $flags = $this->getFlagsString();
         if (
             // not required or already has the Unicode flag
-            ! $this->components->requiresUnicodeFlag() ||
+            ! $this->elements->requiresUnicodeFlag() ||
             strpos($flags, 'u') !== false
         ) {
             return $flags;

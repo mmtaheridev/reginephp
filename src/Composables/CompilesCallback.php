@@ -8,7 +8,7 @@ use Regine\Regine;
 
 /**
  * This trait is used to compile a callback into a regex pattern string.
- * 
+ *
  * @internal
  */
 trait CompilesCallback

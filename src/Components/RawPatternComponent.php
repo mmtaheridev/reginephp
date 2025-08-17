@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use Regine\Enums\ComponentType;
 use Regine\Contracts\RegexComponent;
+use Regine\Enums\ComponentType;
 
 /**
  * A component that represents an already-compiled regex pattern.
