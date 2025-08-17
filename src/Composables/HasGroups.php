@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Regine\Composables;
 
-use Regine\Components\GroupComponent;
+use LogicException;
+use Regine\Components\RawPatternComponent;
+use Regine\Contracts\RegexElement;
+use Regine\Decorators\GroupDecorator;
 use Regine\Enums\GroupTypesEnum;
 use Regine\Regine;
 
@@ -13,18 +16,19 @@ trait HasGroups
     /**
      * Adds a capturing group to the pattern.
      *
-     * Wraps the given pattern in a capturing group, equivalent to `(pattern)` in regular expressions. Accepts either a string pattern or a Regine instance.
+     * Wraps the given pattern in a capturing group, equivalent to `(pattern)` in regular expressions.
      *
      * @param  Regine|string  $pattern  The pattern to include in the capturing group.
      */
     public function group(Regine|string $pattern): self
     {
-        $component = new GroupComponent(
-            GroupTypesEnum::CAPTURING,
-            $pattern
+        $element = $this->createElementFromPattern($pattern);
+        $groupDecorator = new GroupDecorator(
+            element: $element,
+            groupType: GroupTypesEnum::CAPTURING
         );
 
-        $this->components->add($component);
+        $this->elements->add($groupDecorator);
 
         return $this;
     }
@@ -32,18 +36,19 @@ trait HasGroups
     /**
      * Adds a non-capturing group to the regex pattern.
      *
-     * Wraps the given pattern in a non-capturing group `(?:pattern)` and adds it to the pattern builder.
+     * Wraps the given pattern in a non-capturing group `(?:pattern)`.
      *
      * @param  Regine|string  $pattern  The pattern to include in the non-capturing group.
      */
     public function nonCapturingGroup(Regine|string $pattern): self
     {
-        $component = new GroupComponent(
-            GroupTypesEnum::NON_CAPTURING,
-            $pattern
+        $element = $this->createElementFromPattern($pattern);
+        $groupDecorator = new GroupDecorator(
+            element: $element,
+            groupType: GroupTypesEnum::NON_CAPTURING
         );
 
-        $this->components->add($component);
+        $this->elements->add($groupDecorator);
 
         return $this;
     }
@@ -58,13 +63,14 @@ trait HasGroups
      */
     public function namedGroup(string $name, Regine|string $pattern): self
     {
-        $component = new GroupComponent(
-            GroupTypesEnum::NAMED,
-            $pattern,
-            $name
+        $element = $this->createElementFromPattern($pattern);
+        $groupDecorator = new GroupDecorator(
+            element: $element,
+            groupType: GroupTypesEnum::NAMED,
+            name: $name
         );
 
-        $this->components->add($component);
+        $this->elements->add($groupDecorator);
 
         return $this;
     }
@@ -78,12 +84,13 @@ trait HasGroups
      */
     public function atomicGroup(Regine|string $pattern): self
     {
-        $component = new GroupComponent(
-            GroupTypesEnum::ATOMIC,
-            $pattern
+        $element = $this->createElementFromPattern($pattern);
+        $groupDecorator = new GroupDecorator(
+            element: $element,
+            groupType: GroupTypesEnum::ATOMIC
         );
 
-        $this->components->add($component);
+        $this->elements->add($groupDecorator);
 
         return $this;
     }
@@ -100,16 +107,104 @@ trait HasGroups
      */
     public function conditionalGroup(string $condition, Regine|string $then, Regine|string|null $else = null): self
     {
-        $component = new GroupComponent(
-            GroupTypesEnum::CONDITIONAL,
-            $then,
-            null,
-            $condition,
-            $else
+        $thenElement = $this->createElementFromPattern($then);
+        $elseElement = $else !== null ? $this->createElementFromPattern($else) : null;
+
+        $groupDecorator = new GroupDecorator(
+            element: $thenElement,
+            groupType: GroupTypesEnum::CONDITIONAL,
+            condition: $condition,
+            elseBranch: $elseElement
         );
 
-        $this->components->add($component);
+        $this->elements->add($groupDecorator);
 
         return $this;
+    }
+
+    /**
+     * Wrap the last element in the pattern with a capturing group.
+     *
+     * This is the true decorator approach - it takes the last element
+     * and wraps it with a group decorator.
+     */
+    public function wrapInGroup(): self
+    {
+        $this->wrapLastElementInGroup(GroupTypesEnum::CAPTURING);
+
+        return $this;
+    }
+
+    /**
+     * Wrap the last element in the pattern with a non-capturing group.
+     */
+    public function wrapInNonCapturingGroup(): self
+    {
+        $this->wrapLastElementInGroup(GroupTypesEnum::NON_CAPTURING);
+
+        return $this;
+    }
+
+    /**
+     * Wrap the last element in the pattern with a named capturing group.
+     */
+    public function wrapInNamedGroup(string $name): self
+    {
+        $this->wrapLastElementInGroup(GroupTypesEnum::NAMED, $name);
+
+        return $this;
+    }
+
+    /**
+     * Wrap the last element in the pattern with an atomic group.
+     */
+    public function wrapInAtomicGroup(): self
+    {
+        $this->wrapLastElementInGroup(GroupTypesEnum::ATOMIC);
+
+        return $this;
+    }
+
+    /**
+     * Helper method to wrap the last element with a group decorator.
+     */
+    private function wrapLastElementInGroup(
+        GroupTypesEnum $groupType,
+        ?string $name = null,
+        ?string $condition = null
+    ): void {
+        $lastElement = $this->elements->getLastElement();
+
+        if ($lastElement === null) {
+            throw new LogicException('Cannot wrap in group: no preceding element');
+        }
+
+        // Remove the last element and replace it with a grouped version
+        $this->elements->removeLast();
+
+        $groupDecorator = new GroupDecorator(
+            element: $lastElement,
+            groupType: $groupType,
+            name: $name,
+            condition: $condition
+        );
+
+        $this->elements->add($groupDecorator);
+    }
+
+    /**
+     * Convert a pattern (string or Regine) to a regex element.
+     */
+    private function createElementFromPattern(
+        Regine|string $pattern
+    ): RegexElement {
+        if ($pattern instanceof Regine) {
+            // For Regine objects, use raw pattern component to avoid double-escaping
+            return new RawPatternComponent($pattern->compileRaw());
+        }
+
+        // For strings in groups, treat them as raw regex patterns
+        // Users expect patterns like '\d+' to work as regex, not be escaped as literals
+        return new RawPatternComponent($pattern);
     }
 }

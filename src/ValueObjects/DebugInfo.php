@@ -46,11 +46,11 @@ final class DebugInfo
     }
 
     /**
-     * Number of components in the pattern
+     * Number of elements in the pattern
      */
-    public function componentCount(): int
+    public function elementCount(): int
     {
-        return $this->regine->getComponentCount();
+        return $this->regine->getElementCount();
     }
 
     /**
@@ -62,9 +62,9 @@ final class DebugInfo
     }
 
     /**
-     * Component metadata
+     * Element metadata
      *
-     * @return array<array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function metadata(): array
     {
@@ -74,7 +74,7 @@ final class DebugInfo
     /**
      * Returns a serialzed array of the debug info
      *
-     * @return array{pattern: string, compiled: string, description: string, componentCount: int, flags: string, metadata: array<array<string, mixed>>}
+     * @return array{pattern: string, compiled: string, description: string, elementCount: int, flags: string, metadata: array<string, mixed>}
      */
     public function toArray(): array
     {
@@ -82,7 +82,7 @@ final class DebugInfo
             'pattern' => $this->pattern(),
             'compiled' => $this->compiled(),
             'description' => $this->description(),
-            'componentCount' => $this->componentCount(),
+            'elementCount' => $this->elementCount(),
             'flags' => $this->flags(),
             'metadata' => $this->metadata(),
         ];

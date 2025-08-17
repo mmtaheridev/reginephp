@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Regine\Composables;
 
-use Regine\Collections\PatternCollection;
-use Regine\Components\GroupComponent;
-use Regine\Components\QuantifierComponent;
-use Regine\Enums\GroupTypesEnum;
-use Regine\Exceptions\Alternation\NullAlternationComponentException;
+use InvalidArgumentException;
+use Regine\Decorators\QuantifierDecorator;
+use Regine\Enums\QuantifierTypesEnum;
 use Regine\Exceptions\Quantifier\QuantifierForNoPreceedingElementException;
 use Regine\Exceptions\Quantifier\UnquatifyablePreceedingElement;
 
@@ -19,7 +17,7 @@ trait HasQuantifiers
      */
     public function zeroOrMore(): self
     {
-        $this->addQuantifier(QuantifierComponent::zeroOrMore());
+        $this->applyQuantifierDecorator(QuantifierTypesEnum::ZERO_OR_MORE);
 
         return $this;
     }
@@ -29,7 +27,7 @@ trait HasQuantifiers
      */
     public function oneOrMore(): self
     {
-        $this->addQuantifier(QuantifierComponent::oneOrMore());
+        $this->applyQuantifierDecorator(QuantifierTypesEnum::ONE_OR_MORE);
 
         return $this;
     }
@@ -39,7 +37,7 @@ trait HasQuantifiers
      */
     public function optional(): self
     {
-        $this->addQuantifier(QuantifierComponent::optional());
+        $this->applyQuantifierDecorator(QuantifierTypesEnum::OPTIONAL);
 
         return $this;
     }
@@ -49,7 +47,7 @@ trait HasQuantifiers
      */
     public function exactly(int $n): self
     {
-        $this->addQuantifier(QuantifierComponent::exactly($n));
+        $this->applyQuantifierDecorator(QuantifierTypesEnum::EXACTLY, ['count' => $n]);
 
         return $this;
     }
@@ -59,7 +57,7 @@ trait HasQuantifiers
      */
     public function atLeast(int $n): self
     {
-        $this->addQuantifier(QuantifierComponent::atLeast($n));
+        $this->applyQuantifierDecorator(QuantifierTypesEnum::AT_LEAST, ['min' => $n]);
 
         return $this;
     }
@@ -69,62 +67,92 @@ trait HasQuantifiers
      */
     public function between(int $min, int $max): self
     {
-        $this->addQuantifier(QuantifierComponent::between($min, $max));
+        $this->applyQuantifierDecorator(QuantifierTypesEnum::BETWEEN, ['min' => $min, 'max' => $max]);
 
         return $this;
     }
 
     /**
-     * Adds a quantifier to the last regex component in the pattern.
+     * Make the last quantifier lazy (non-greedy)
+     */
+    public function lazy(): self
+    {
+        $this->modifyLastQuantifier('lazy');
+
+        return $this;
+    }
+
+    /**
+     * Make the last quantifier possessive
+     */
+    public function possessive(): self
+    {
+        $this->modifyLastQuantifier('possessive');
+
+        return $this;
+    }
+
+    /**
+     * Apply a quantifier decorator to the last element in the collection.
      *
-     * If the last component is an alternation, it is first wrapped in a non-capturing group before applying the quantifier.
+     * This method uses the decorator pattern to wrap the last element with a quantifier,
+     * eliminating the need for complex grouping logic.
      *
-     * @param  QuantifierComponent  $quantifier  The quantifier to apply to the last component.
+     * @param  array<string, int>  $parameters  Parameters for the quantifier (count, min, max)
      *
      * @throws QuantifierForNoPreceedingElementException If there is no preceding element.
-     * @throws UnquatifyablePreceedingElement If the last component cannot be quantified.
-     * @throws NullAlternationComponentException If an expected alternation component is missing.
+     * @throws UnquatifyablePreceedingElement If the last element cannot be quantified.
      */
-    private function addQuantifier(QuantifierComponent $quantifier): void
-    {
-        $lastComponent = $this->components->getLastComponent();
+    private function applyQuantifierDecorator(
+        QuantifierTypesEnum $quantifierType,
+        array $parameters = []
+    ): void {
+        $lastElement = $this->elements->getLastElement();
 
-        if ($lastComponent === null) {
+        if ($lastElement === null) {
             throw new QuantifierForNoPreceedingElementException;
         }
 
-        if (! $lastComponent->canBeQuantified()) {
+        if (! $lastElement->canBeQuantified()) {
             throw new UnquatifyablePreceedingElement;
         }
 
-        // If the last component is an alternation, wrap it in a non-capturing group
-        if ($lastComponent->getType() === 'alternation') {
-            // Remove the alternation component and wrap it in a group
-            $components = $this->components->getComponents();
-            $alternationComponent = array_pop($components);
+        // Remove the last element and replace it with a quantified version
+        $this->elements->removeLast();
 
-            if ($alternationComponent === null) {
-                throw new NullAlternationComponentException;
-            }
+        // Create the quantifier decorator wrapping the element
+        $quantifiedElement = new QuantifierDecorator(
+            $lastElement,
+            $quantifierType,
+            $parameters
+        );
 
-            // Create a new pattern collection without the alternation
-            $this->components = new PatternCollection;
-            foreach ($components as $component) {
-                $this->components->add($component);
-            }
+        // Add the decorated element back to the collection
+        $this->elements->add($quantifiedElement);
+    }
 
-            // Wrap the alternation in a non-capturing group
-            $groupComponent = new GroupComponent(
-                GroupTypesEnum::NON_CAPTURING,
-                $alternationComponent->compile()
-            );
+    /**
+     * Modify the last quantifier to be lazy or possessive.
+     *
+     * @throws InvalidArgumentException If the last element is not a quantifier decorator
+     */
+    private function modifyLastQuantifier(string $modifier): void
+    {
+        $lastElement = $this->elements->getLastElement();
 
-            $this->components->add($groupComponent);
-
-            // Update the last component reference
-            $lastComponent = $groupComponent;
+        if (! $lastElement instanceof QuantifierDecorator) {
+            throw new InvalidArgumentException("Cannot apply {$modifier} modifier: last element is not a quantifier");
         }
 
-        $this->components->add($quantifier);
+        // Remove the last element and replace it with a modified version
+        $this->elements->removeLast();
+
+        $modifiedQuantifier = match ($modifier) {
+            'lazy' => $lastElement->makeLazy(),
+            'possessive' => $lastElement->makePossessive(),
+            default => throw new InvalidArgumentException("Unknown quantifier modifier: {$modifier}")
+        };
+
+        $this->elements->add($modifiedQuantifier);
     }
 }
