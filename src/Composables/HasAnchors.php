@@ -13,7 +13,7 @@ trait HasAnchors
      */
     public function startOfString(): self
     {
-        $this->components->add(AnchorComponent::startOfString());
+        $this->elements->add(AnchorComponent::startOfString());
 
         return $this;
     }
@@ -23,7 +23,7 @@ trait HasAnchors
      */
     public function endOfString(): self
     {
-        $this->components->add(AnchorComponent::endOfString());
+        $this->elements->add(AnchorComponent::endOfString());
 
         return $this;
     }
@@ -33,7 +33,7 @@ trait HasAnchors
      */
     public function startOfLine(): self
     {
-        $this->components->add(AnchorComponent::startOfLine());
+        $this->elements->add(AnchorComponent::startOfLine());
 
         return $this;
     }
@@ -43,7 +43,7 @@ trait HasAnchors
      */
     public function endOfLine(): self
     {
-        $this->components->add(AnchorComponent::endOfLine());
+        $this->elements->add(AnchorComponent::endOfLine());
 
         return $this;
     }
@@ -53,7 +53,7 @@ trait HasAnchors
      */
     public function wordBoundary(): self
     {
-        $this->components->add(AnchorComponent::wordBoundary());
+        $this->elements->add(AnchorComponent::wordBoundary());
 
         return $this;
     }
@@ -63,7 +63,7 @@ trait HasAnchors
      */
     public function nonWordBoundary(): self
     {
-        $this->components->add(AnchorComponent::nonWordBoundary());
+        $this->elements->add(AnchorComponent::nonWordBoundary());
 
         return $this;
     }

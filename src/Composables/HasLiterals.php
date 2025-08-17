@@ -10,7 +10,7 @@ trait HasLiterals
 {
     public function literal(string $text): self
     {
-        $this->components->add(new LiteralComponent($text));
+        $this->elements->add(new LiteralComponent($text));
 
         return $this;
     }

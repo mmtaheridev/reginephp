@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
-use Regine\Contracts\RegexComponent;
-use Regine\Exceptions\Literal\EmptyLiteralComponentException;
-use Regine\ValueObjects\SafeCharacter;
+use Regine\Enums\ComponentType;
 use Regine\ValueObjects\SafeString;
+use Regine\Contracts\RegexComponent;
+use Regine\ValueObjects\SafeCharacter;
+use Regine\Exceptions\Literal\EmptyLiteralComponentException;
 
 class LiteralComponent implements RegexComponent
 {
-    private static string $type = 'LITERAL';
-
     private SafeString $text;
 
     /**
@@ -47,7 +46,7 @@ class LiteralComponent implements RegexComponent
      */
     public function getType(): string
     {
-        return self::$type;
+        return ComponentType::LITERAL->value;
     }
 
     /**
@@ -58,7 +57,7 @@ class LiteralComponent implements RegexComponent
     public function getMetadata(): array
     {
         return [
-            'type' => self::$type,
+            'type' => $this->getType(),
             'text' => $this->text->getRaw(),
             'hasSpecialCharacters' => $this->text->hasSpecialCharacters(),
             'specialCharacters' => array_map(
