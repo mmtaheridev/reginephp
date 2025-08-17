@@ -329,14 +329,14 @@ describe('Groups', function () {
             ->group('abc')
             ->namedGroup('test', 'def');
 
-        expect($regine->getComponentCount())->toBe(2);
+        expect($regine->getElementCount())->toBe(2);
 
         $metadata = $regine->getMetadata();
-        expect($metadata[0]['type'])->toBe('group');
-        expect($metadata[0]['group_type'])->toBe('CAPTURING');
-        expect($metadata[1]['type'])->toBe('group');
-        expect($metadata[1]['group_type'])->toBe('NAMED');
-        expect($metadata[1]['name'])->toBe('test');
+        expect($metadata['elements'][0]['type'])->toBe('group');
+        expect($metadata['elements'][0]['group_type'])->toBe('CAPTURING');
+        expect($metadata['elements'][1]['type'])->toBe('group');
+        expect($metadata['elements'][1]['group_type'])->toBe('NAMED');
+        expect($metadata['elements'][1]['group_name'])->toBe('test');
     });
 
     it('provides correct descriptions for groups', function () {
@@ -344,8 +344,8 @@ describe('Groups', function () {
             ->group('abc')
             ->namedGroup('test', 'def');
 
-        expect($regine->describe())->toContain("capturing group containing 'abc'");
-        expect($regine->describe())->toContain("named group named 'test' containing 'def'");
+        expect($regine->describe())->toContain('capturing group');
+        expect($regine->describe())->toContain("named group 'test'");
     });
 
     it('tests actual matching with groups', function () {

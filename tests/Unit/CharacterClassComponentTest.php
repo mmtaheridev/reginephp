@@ -258,7 +258,7 @@ describe('Character Range Metadata', function () {
         $component = CharacterClassComponent::range('a', 'z');
         $metadata = $component->getMetadata();
 
-        expect($metadata['type'])->toBe('CHARACTER_CLASS')
+        expect($metadata['type'])->toBe('character_class')
             ->and($metadata['classType'])->toBe('range')
             ->and($metadata['fromChar'])->toBe('a')
             ->and($metadata['toChar'])->toBe('z')

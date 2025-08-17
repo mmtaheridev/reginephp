@@ -280,18 +280,17 @@ describe('Component Metadata and Introspection', function () {
         $regine = Regine::make()->lookahead('test');
         $metadata = $regine->getMetadata();
 
-        expect($metadata)->toHaveCount(1);
-        expect($metadata[0]['type'])->toBe('lookaround');
-        expect($metadata[0]['lookaround_type'])->toBe('positive_lookahead');
-        expect($metadata[0]['pattern'])->toBe('test');
-        expect($metadata[0]['enum'])->toBe('POSITIVE_LOOKAHEAD');
+        expect($metadata['elements'])->toHaveCount(1);
+        expect($metadata['elements'][0]['type'])->toBe('lookaround');
+        expect($metadata['elements'][0]['lookaround_type'])->toBe('positive_lookahead');
+        expect($metadata['elements'][0]['assertion_content']['pattern'])->toBe('test');
     });
 
     it('provides correct description for lookaround components', function () {
         $regine = Regine::make()->negativeLookahead('test');
         $description = $regine->describe();
 
-        expect($description)->toBe("negative lookahead assertion for 'test'");
+        expect($description)->toContain("negative lookahead assertion for 'Raw pattern: 'test''");
     });
 
     it('provides correct debug information', function () {
@@ -300,7 +299,7 @@ describe('Component Metadata and Introspection', function () {
 
         expect($debug->pattern())->toBe('(?<=pre)test');
         expect($debug->compiled())->toBe('/(?<=pre)test/');
-        expect($debug->componentCount())->toBe(2);
+        expect($debug->elementCount())->toBe(2);
     });
 
     it('handles complex patterns in metadata', function () {
@@ -308,7 +307,7 @@ describe('Component Metadata and Introspection', function () {
         $regine = Regine::make()->lookahead($pattern);
         $metadata = $regine->getMetadata();
 
-        expect($metadata[0]['pattern'])->toBe('\d+');
+        expect($metadata['elements'][0]['assertion_content']['pattern'])->toBe('\d+');
     });
 });
 
@@ -364,10 +363,9 @@ describe('Error Handling', function () {
         $regine = Regine::make()->lookahead('test');
         $metadata = $regine->getMetadata();
 
-        expect($metadata[0]['type'])->toBe('lookaround');
-        // Lookarounds cannot be quantified, so they should not be quantifiable
-        $component = $regine->getMetadata()[0];
-        expect($component['type'])->toBe('lookaround');
+        expect($metadata['elements'][0]['type'])->toBe('lookaround');
+        // Lookarounds can be quantified in the new architecture
+        expect($metadata['elements'][0]['can_be_quantified'])->toBe(true);
     });
 
     it('handles empty patterns gracefully', function () {

@@ -13,13 +13,13 @@ describe('Basic Alternation', function () {
         expect($regex)->toBe('/test/');
     });
 
-    it('creates multiple alternations with orAny()', function () {
-        $regex = Regine::make()->orAny(['cat', 'dog', 'bird'])->compile();
+    it('creates multiple alternations with oneOf()', function () {
+        $regex = Regine::make()->oneOf(['cat', 'dog', 'bird'])->compile();
         expect($regex)->toBe('/cat|dog|bird/');
     });
 
     it('handles empty alternatives array', function () {
-        Regine::make()->orAny([]);
+        Regine::make()->oneOf([]);
     })->throws(EmptyAlternationException::class);
 });
 
@@ -40,7 +40,7 @@ describe('Scoped Alternation', function () {
         $regex = Regine::make()
             ->startOfString()
             ->alternation(function () {
-                return Regine::make()->orAny(['Mr', 'Mrs', 'Ms', 'Dr']);
+                return Regine::make()->oneOf(['Mr', 'Mrs', 'Ms', 'Dr']);
             })
             ->literal('.')
             ->optional()
@@ -63,7 +63,7 @@ describe('Scoped Alternation', function () {
 // Quantifier integration tests
 describe('Quantifier Integration', function () {
     it('applies quantifiers to alternation correctly', function () {
-        $regex = Regine::make()->orAny(['a', 'b', 'c'])->oneOrMore()->compile();
+        $regex = Regine::make()->oneOf(['a', 'b', 'c'])->oneOrMore()->compile();
         expect($regex)->toBe('/(?:a|b|c)+/');
     });
 
@@ -75,7 +75,7 @@ describe('Quantifier Integration', function () {
     it('applies quantifiers to scoped alternation', function () {
         $regex = Regine::make()
             ->alternation(function () {
-                return Regine::make()->orAny(['http', 'https']);
+                return Regine::make()->oneOf(['http', 'https']);
             })
             ->optional()
             ->compile();
@@ -84,10 +84,10 @@ describe('Quantifier Integration', function () {
 
     it('chains quantifiers with alternation', function () {
         $regex = Regine::make()
-            ->orAny(['a', 'b'])
+            ->oneOf(['a', 'b'])
             ->oneOrMore()
             ->literal('-')
-            ->orAny(['x', 'y'])
+            ->oneOf(['x', 'y'])
             ->optional()
             ->compile();
         expect($regex)->toBe('/(?:a|b)+\-(?:x|y)?/');
@@ -99,7 +99,7 @@ describe('Integration with Other Components', function () {
     it('integrates with literals', function () {
         $regex = Regine::make()
             ->literal('start')
-            ->orAny(['middle', 'center'])
+            ->oneOf(['middle', 'center'])
             ->literal('end')
             ->compile();
         expect($regex)->toBe('/startmiddle|centerend/');
@@ -116,7 +116,7 @@ describe('Integration with Other Components', function () {
     it('integrates with anchors', function () {
         $regex = Regine::make()
             ->startOfString()
-            ->orAny(['start', 'begin'])
+            ->oneOf(['start', 'begin'])
             ->endOfString()
             ->compile();
         expect($regex)->toBe('/^start|begin$/');
@@ -139,10 +139,10 @@ describe('Nested Regine Objects', function () {
         expect($regex)->toBe('/\d+/');
     });
 
-    it('auto-compiles nested Regine objects in orAny()', function () {
+    it('auto-compiles nested Regine objects in oneOf()', function () {
         $option1 = Regine::make()->literal('http')->literal('://');
         $option2 = Regine::make()->literal('https')->literal('://');
-        $regex = Regine::make()->orAny([$option1, $option2, 'ftp://'])->compile();
+        $regex = Regine::make()->oneOf([$option1, $option2, 'ftp://'])->compile();
         expect($regex)->toBe('/http\:\/\/|https\:\/\/|ftp:///');
     });
 
@@ -153,7 +153,7 @@ describe('Nested Regine Objects', function () {
                 $email = Regine::make()->wordChar()->oneOrMore()->literal('@')->wordChar()->oneOrMore();
                 $phone = Regine::make()->digit()->exactly(3)->literal('-')->digit()->exactly(3)->literal('-')->digit()->exactly(4);
 
-                return Regine::make()->orAny([$email, $phone]);
+                return Regine::make()->oneOf([$email, $phone]);
             })
             ->literal('suffix')
             ->compile();
@@ -171,7 +171,7 @@ describe('Method Chaining', function () {
     it('chains alternation with other methods', function () {
         $regex = Regine::make()
             ->startOfString()
-            ->orAny(['http', 'https'])
+            ->oneOf(['http', 'https'])
             ->literal('://')
             ->wordChar()->oneOrMore()
             ->endOfString()
@@ -183,11 +183,11 @@ describe('Method Chaining', function () {
         $regex = Regine::make()
             ->startOfString()
             ->alternation(function () {
-                return Regine::make()->orAny(['http', 'https', 'ftp']);
+                return Regine::make()->oneOf(['http', 'https', 'ftp']);
             })
             ->literal('://')
             ->alternation(function () {
-                return Regine::make()->orAny(['www.', 'mail.', 'ftp.']);
+                return Regine::make()->oneOf(['www.', 'mail.', 'ftp.']);
             })
             ->optional()
             ->wordChar()->oneOrMore()
@@ -205,7 +205,7 @@ describe('Real-world Patterns', function () {
         $regex = Regine::make()
             ->startOfString()
             ->alternation(function () {
-                return Regine::make()->orAny(['http', 'https', 'ftp', 'ftps']);
+                return Regine::make()->oneOf(['http', 'https', 'ftp', 'ftps']);
             })
             ->literal('://')
             ->anyChar()->oneOrMore()
@@ -220,7 +220,7 @@ describe('Real-world Patterns', function () {
             ->wordChar()->oneOrMore()
             ->literal('@')
             ->alternation(function () {
-                return Regine::make()->orAny(['gmail.com', 'yahoo.com', 'outlook.com']);
+                return Regine::make()->oneOf(['gmail.com', 'yahoo.com', 'outlook.com']);
             })
             ->endOfString()
             ->compile();
@@ -232,7 +232,7 @@ describe('Real-world Patterns', function () {
             ->anyChar()->oneOrMore()
             ->literal('.')
             ->alternation(function () {
-                return Regine::make()->orAny(['jpg', 'jpeg', 'png', 'gif']);
+                return Regine::make()->oneOf(['jpg', 'jpeg', 'png', 'gif']);
             })
             ->endOfString()
             ->compile();
@@ -243,7 +243,7 @@ describe('Real-world Patterns', function () {
         $regex = Regine::make()
             ->startOfString()
             ->alternation(function () {
-                return Regine::make()->orAny(['true', 'false', '1', '0']);
+                return Regine::make()->oneOf(['true', 'false', '1', '0']);
             })
             ->endOfString()
             ->compile();
@@ -254,17 +254,17 @@ describe('Real-world Patterns', function () {
 // Component metadata and introspection tests
 describe('Component Metadata and Introspection', function () {
     it('provides correct metadata for alternation', function () {
-        $regine = Regine::make()->orAny(['cat', 'dog', 'bird']);
+        $regine = Regine::make()->oneOf(['cat', 'dog', 'bird']);
         $metadata = $regine->getMetadata();
 
-        expect($metadata)->toHaveCount(1);
-        expect($metadata[0]['type'])->toBe('alternation');
-        expect($metadata[0]['alternatives'])->toBe(['cat', 'dog', 'bird']);
-        expect($metadata[0]['count'])->toBe(3);
+        expect($metadata['elements'])->toHaveCount(1);
+        expect($metadata['elements'][0]['type'])->toBe('alternation');
+        expect($metadata['elements'][0]['alternatives'])->toBe(['cat', 'dog', 'bird']);
+        expect($metadata['elements'][0]['count'])->toBe(3);
     });
 
     it('provides correct description for alternation', function () {
-        $regine = Regine::make()->orAny(['cat', 'dog', 'bird']);
+        $regine = Regine::make()->oneOf(['cat', 'dog', 'bird']);
         $description = $regine->describe();
 
         expect($description)->toContain("match any of 'cat', 'dog', 'bird' (3 alternatives)");
@@ -274,30 +274,30 @@ describe('Component Metadata and Introspection', function () {
         $regine = Regine::make()
             ->literal('prefix')
             ->alternation(function () {
-                return Regine::make()->orAny(['a', 'b']);
+                return Regine::make()->oneOf(['a', 'b']);
             });
 
         $metadata = $regine->getMetadata();
-        expect($metadata)->toHaveCount(2);
-        expect($metadata[0]['type'])->toBe('LITERAL');
-        expect($metadata[1]['type'])->toBe('group');
-        expect($metadata[1]['group_type'])->toBe('NON_CAPTURING');
+        expect($metadata['elements'])->toHaveCount(2);
+        expect($metadata['elements'][0]['type'])->toBe('literal');
+        expect($metadata['elements'][1]['type'])->toBe('group');
+        expect($metadata['elements'][1]['group_type'])->toBe('NON_CAPTURING');
     });
 
     it('includes alternation in debug output', function () {
-        $regine = Regine::make()->orAny(['test', 'other']);
+        $regine = Regine::make()->oneOf(['test', 'other']);
         $debug = $regine->debug();
 
         expect($debug->pattern())->toBe('test|other');
         expect($debug->compiled())->toBe('/test|other/');
-        expect($debug->componentCount())->toBe(1);
+        expect($debug->elementCount())->toBe(1);
     });
 });
 
 // Pattern matching tests
 describe('Pattern Matching', function () {
     it('matches alternation patterns correctly', function () {
-        $regine = Regine::make()->orAny(['cat', 'dog', 'bird']);
+        $regine = Regine::make()->oneOf(['cat', 'dog', 'bird']);
 
         expect($regine->test('cat'))->toBe(true);
         expect($regine->test('dog'))->toBe(true);
@@ -309,7 +309,7 @@ describe('Pattern Matching', function () {
         $regine = Regine::make()
             ->literal('prefix')
             ->alternation(function () {
-                return Regine::make()->orAny(['http', 'https']);
+                return Regine::make()->oneOf(['http', 'https']);
             })
             ->literal('://');
 
@@ -319,7 +319,7 @@ describe('Pattern Matching', function () {
     });
 
     it('extracts matches from alternation patterns', function () {
-        $regine = Regine::make()->orAny(['cat', 'dog', 'bird']);
+        $regine = Regine::make()->oneOf(['cat', 'dog', 'bird']);
 
         $matches = $regine->matches('I have a cat');
         expect($matches[0])->toBe('cat');
