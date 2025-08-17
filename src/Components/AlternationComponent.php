@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Regine\Components;
 
+use Regine\Enums\ComponentType;
 use Regine\Contracts\RegexComponent;
 use Regine\Exceptions\Alternation\EmptyAlternationException;
-use Regine\Regine;
 
 /**
  * Alternation component
@@ -22,7 +22,7 @@ class AlternationComponent implements RegexComponent
     /**
      * Initializes an alternation component with one or more alternatives.
      *
-     * @param  array<Regine|string>  $alternatives  An array of alternatives, each as a Regine object or string.
+     * @param  array<string>  $alternatives  An array of alternative patterns as strings.
      *
      * @throws EmptyAlternationException If no alternatives are provided.
      */
@@ -32,19 +32,16 @@ class AlternationComponent implements RegexComponent
             throw new EmptyAlternationException;
         }
 
-        $this->alternatives = array_map(
-            fn (Regine|string $alternative) => $this->compilePattern($alternative),
-            $alternatives
-        );
+        $this->alternatives = $alternatives;
     }
 
     /**
      * Creates an alternation component with a single alternative.
      *
-     * @param  Regine|string  $alternative  The alternative to include in the alternation.
+     * @param  string  $alternative  The alternative pattern to include in the alternation.
      * @return self The created AlternationComponent instance.
      */
-    public static function single(Regine|string $alternative): self
+    public static function single(string $alternative): self
     {
         return new self([$alternative]);
     }
@@ -52,7 +49,7 @@ class AlternationComponent implements RegexComponent
     /**
      * Creates an alternation component from multiple alternatives.
      *
-     * @param  array<Regine|string>  $alternatives  The alternatives to include in the alternation.
+     * @param  array<string>  $alternatives  The alternative patterns to include in the alternation.
      * @return self The constructed alternation component.
      */
     public static function multiple(array $alternatives): self
@@ -77,7 +74,7 @@ class AlternationComponent implements RegexComponent
      */
     public function getType(): string
     {
-        return 'alternation';
+        return ComponentType::ALTERNATION->value;
     }
 
     /**
@@ -117,23 +114,5 @@ class AlternationComponent implements RegexComponent
         $alternatives = implode("', '", $this->alternatives);
 
         return "match any of '{$alternatives}' ({$count} alternatives)";
-    }
-
-    /**
-     * Converts a Regine object or string pattern to its string representation.
-     *
-     * If the pattern is a Regine object, its raw compiled string is returned; otherwise, the string is returned as-is.
-     *
-     * @param  Regine|string  $pattern  The pattern to convert.
-     * @return string The string representation of the pattern.
-     */
-    private function compilePattern(Regine|string $pattern): string
-    {
-        if ($pattern instanceof Regine) {
-            // Use the raw compilation method for nesting patterns
-            return $pattern->compileRaw();
-        }
-
-        return $pattern;
     }
 }

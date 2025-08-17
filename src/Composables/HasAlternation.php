@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Regine\Composables;
 
-use Regine\Collections\PatternCollection;
 use Regine\Components\AlternationComponent;
-use Regine\Components\GroupComponent;
+use Regine\Components\RawPatternComponent;
+use Regine\Decorators\GroupDecorator;
 use Regine\Enums\GroupTypesEnum;
 use Regine\Exceptions\Alternation\AlternationCallbackDoesntReturnRegine;
-use Regine\Exceptions\Alternation\NullAlternationComponentException;
 use Regine\Regine;
 
 /**
@@ -49,13 +48,14 @@ trait HasAlternation
             throw new AlternationCallbackDoesntReturnRegine;
         }
 
-        // Wrap the alternation pattern in a non-capturing group
-        $component = new GroupComponent(
-            GroupTypesEnum::NON_CAPTURING,
-            $alternationPattern
+        // Convert the alternation pattern to an element and wrap in a non-capturing group
+        $element = new RawPatternComponent($alternationPattern->compileRaw());
+        $groupDecorator = new GroupDecorator(
+            element: $element,
+            groupType: GroupTypesEnum::NON_CAPTURING
         );
 
-        $this->components->add($component);
+        $this->elements->add($groupDecorator);
 
         return $this;
     }
@@ -63,9 +63,8 @@ trait HasAlternation
     /**
      * Add alternation with a single alternative within the current scope
      *
-     * This method works by taking the last component and creating alternation with it.
-     * If the last component is already an alternation, it adds to that alternation.
-     * Otherwise, it creates a new alternation component.
+     * This method creates alternation with the last element. The decorator pattern
+     * handles grouping automatically when needed.
      *
      * <code>
      *      $regine = Regine::make()->literal('http')->or('https'); // http|https
@@ -76,67 +75,38 @@ trait HasAlternation
      */
     public function or(Regine|string $alternative): self
     {
-        $lastComponent = $this->components->getLastComponent();
+        $lastElement = $this->elements->getLastElement();
+        $alternativePattern = $this->compilePattern($alternative);
 
-        if ($lastComponent === null) {
-            // No previous components, just add the alternative
-            $component = AlternationComponent::single($alternative);
-            $this->components->add($component);
+        if ($lastElement === null) {
+            // No previous elements, just add the alternative as a single alternation
+            $alternation = AlternationComponent::single($alternativePattern);
+            $this->elements->add($alternation);
 
             return $this;
         }
 
-        // If the last component is already an alternation, extend it
-        if ($lastComponent->getType() === 'alternation') {
-            // Remove the last alternation component
-            $components = $this->components->getComponents();
-            $alternationComponent = array_pop($components);
+        // If the last element is already an alternation, extend it
+        if ($lastElement->getType() === 'alternation') {
+            $this->elements->removeLast();
 
-            if ($alternationComponent === null) {
-                throw new NullAlternationComponentException;
-            }
-
-            // Get existing alternatives and add the new one
-            $metadata = $alternationComponent->getMetadata();
-            /** @var array<Regine|string> $existingAlternatives */
+            $metadata = $lastElement->getMetadata();
+            /** @var array<string> $existingAlternatives */
             $existingAlternatives = $metadata['alternatives'] ?? [];
-            $newAlternative = $alternative instanceof Regine ?
-                $this->compilePattern($alternative) :
-                $alternative;
-            $existingAlternatives[] = $newAlternative;
+            $existingAlternatives[] = $alternativePattern;
 
-            // Create new alternation with all alternatives
-            $newAlternationComponent = AlternationComponent::multiple($existingAlternatives);
-
-            // Rebuild components collection
-            $this->components = new PatternCollection;
-            foreach ($components as $component) {
-                $this->components->add($component);
-            }
-            $this->components->add($newAlternationComponent);
+            $newAlternation = AlternationComponent::multiple($existingAlternatives);
+            $this->elements->add($newAlternation);
 
             return $this;
         }
 
-        // Create alternation between the last component and the new alternative
-        $lastComponentPattern = $lastComponent->compile();
-        $alternativePattern = $alternative instanceof Regine ?
-            $this->compilePattern($alternative) :
-            $alternative;
+        // Create alternation between the last element and the new alternative
+        $this->elements->removeLast();
+        $lastElementPattern = $lastElement->compile();
 
-        // Remove the last component
-        $components = $this->components->getComponents();
-        array_pop($components);
-
-        // Create alternation
-        $alternationComponent = AlternationComponent::multiple([$lastComponentPattern, $alternativePattern]);
-
-        // Rebuild components collection
-        $this->components = new PatternCollection;
-        foreach ($components as $component) {
-            $this->components->add($component);
-        }
-        $this->components->add($alternationComponent);
+        $alternation = AlternationComponent::multiple([$lastElementPattern, $alternativePattern]);
+        $this->elements->add($alternation);
 
         return $this;
     }
@@ -144,23 +114,40 @@ trait HasAlternation
     /**
      * Add alternation with multiple alternatives within the current scope
      *
+     * This creates an alternation where exactly one of the provided alternatives can match.
+     * The decorator pattern handles proper grouping automatically when needed.
+     *
      * <code>
-     *      $regine = Regine::make()->orAny(['http', 'https', 'ftp']); // http|https|ftp
-     *      $regine = Regine::make()->orAny([
-     *          Regine::make()->literal('cat'),
-     *          Regine::make()->literal('dog'),
-     *          'bird'
-     *      ]); // cat|dog|bird
+     *      $regine = Regine::make()->oneOf(['http', 'https', 'ftp']); // http|https|ftp
+     *      $regine = Regine::make()->literal('start')->oneOf(['middle', 'center'])->literal('end'); // start(middle|center)end
      * </code>
      *
-     * @param  array<Regine|string>  $alternatives  The alternative patterns
+     * @param  array<Regine|string>  $alternatives  The alternative patterns (strings or Regine objects)
+     */
+    public function oneOf(array $alternatives): self
+    {
+        // Convert any Regine objects to strings
+        $compiledAlternatives = array_map(
+            fn ($alternative) => $this->compilePattern($alternative),
+            $alternatives
+        );
+
+        $alternation = AlternationComponent::multiple($compiledAlternatives);
+        $this->elements->add($alternation);
+
+        return $this;
+    }
+
+    /**
+     * Add alternation with multiple alternatives within the current scope
+     *
+     * @deprecated Use oneOf() instead for clearer intent. This method will be removed in a future version.
+     *
+     * @param  array<string>  $alternatives  The alternative patterns (simplified to strings only)
      */
     public function orAny(array $alternatives): self
     {
-        $component = AlternationComponent::multiple($alternatives);
-        $this->components->add($component);
-
-        return $this;
+        return $this->oneOf($alternatives);
     }
 
     /**
