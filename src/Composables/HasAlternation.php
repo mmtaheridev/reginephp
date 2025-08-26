@@ -118,8 +118,11 @@ trait HasAlternation
      * The decorator pattern handles proper grouping automatically when needed.
      *
      * <code>
-     *      $regine = Regine::make()->oneOf(['http', 'https', 'ftp']); // http|https|ftp
-     *      $regine = Regine::make()->literal('start')->oneOf(['middle', 'center'])->literal('end'); // start(middle|center)end
+     *      $regine = Regine::make()->oneOf(['http', 'https', 'ftp']);
+     *      // http|https|ftp
+     *
+     *      $regine = Regine::make()->literal('start')->oneOf(['middle', 'center'])->literal('end');
+     *      // start(middle|center)end
      * </code>
      *
      * @param  array<Regine|string>  $alternatives  The alternative patterns (strings or Regine objects)

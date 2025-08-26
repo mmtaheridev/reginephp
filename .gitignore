@@ -1,4 +1,37 @@
-vendor/
-.idea
-.vscode
-references/
+# Dependencies
+/vendor/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Cache and logs
+.phpunit.result.cache
+*.log
+
+# IDE and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.cursor/
+
+# OS generated files
+*.swp
+*.swo
+*~
+
+# Composer
+composer.phar
+
+# PHPUnit
+/phpunit.xml
+
+# Coverage reports
+/coverage/
+/.coverage/
+
+# Temporary files
+/tmp/
+/temp/

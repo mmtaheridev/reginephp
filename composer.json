@@ -1,12 +1,19 @@
 {
     "name": "mmtaheridev/reginephp",
-    "description": "Regine is a fluent PHP library for building regular expressions (regex) in a readable, modular way.",
+    "description": "An expressive PHP library for crafting regular expressions fluently.",
     "type": "library",
     "license": "MIT",
+    "keywords": ["regex", "regular-expressions", "fluent", "php", "pattern-matching", "validation", "builder", "chainable"],
+    "homepage": "https://github.com/mmtaheridev/reginephp",
+    "support": {
+        "issues": "https://github.com/mmtaheridev/reginephp/issues",
+        "source": "https://github.com/mmtaheridev/reginephp"
+    },
     "authors": [
         {
             "name": "Mohammad Mahdi Taheri",
-            "email": "mmtaheri.dev@gmail.com"
+            "email": "mmtaheri.dev@gmail.com",
+            "homepage": "https://github.com/mmtaheridev"
         }
     ],
     "require": {
@@ -28,9 +35,19 @@
             "Tests\\": "tests/"
         }
     },
+    "scripts": {
+        "test": "pest",
+        "test-coverage": "pest --coverage",
+        "analyse": "phpstan analyse",
+        "format": "duster fix",
+        "lint": "duster lint"
+    },
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true
-        }
-    }
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
